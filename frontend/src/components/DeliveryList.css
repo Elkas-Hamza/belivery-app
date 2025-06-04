@@ -1,0 +1,548 @@
+.delivery-list-container {
+  max-width: 100%;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1400px) {
+  .delivery-list-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+  }
+}
+
+.delivery-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.header-left h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.delivery-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.add-delivery-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.add-delivery-btn:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.add-delivery-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* Add scrollbar styling for better UX */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.deliveries-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+  min-width: 1200px; /* Ensure table doesn't get too narrow */
+  table-layout: fixed; /* Fixed layout for better column control */
+  background: white;
+}
+
+.deliveries-table th,
+.deliveries-table td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deliveries-table th {
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: #555;
+  letter-spacing: 0.5px;
+}
+.deliveries-table th:nth-child(1),
+.deliveries-table td:nth-child(1) {
+  width: 60px; /* ID */
+  min-width: 60px;
+}
+
+.deliveries-table th:nth-child(2),
+.deliveries-table td:nth-child(2) {
+  width: 120px; /* Status */
+  min-width: 120px;
+}
+
+.deliveries-table th:nth-child(3),
+.deliveries-table td:nth-child(3) {
+  width: 200px; /* Pickup Address */
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.deliveries-table th:nth-child(4),
+.deliveries-table td:nth-child(4) {
+  width: 200px; /* Delivery Address */
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.deliveries-table th:nth-child(5),
+.deliveries-table td:nth-child(5) {
+  width: 140px; /* Contact */
+  min-width: 140px;
+}
+
+.deliveries-table th:nth-child(6),
+.deliveries-table td:nth-child(6) {
+  width: 100px; /* Weight */
+  min-width: 100px;
+  text-align: right;
+}
+
+.deliveries-table th:nth-child(7),
+.deliveries-table td:nth-child(7) {
+  width: 100px; /* Price */
+  min-width: 100px;
+  text-align: right;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.deliveries-table th:nth-child(8),
+.deliveries-table td:nth-child(8) {
+  width: 140px; /* Created */
+  min-width: 140px;
+}
+
+.deliveries-table th:nth-child(9),
+.deliveries-table td:nth-child(9) {
+  width: 140px; /* Arrival Date */
+  min-width: 140px;
+}
+
+.deliveries-table th:last-child,
+.deliveries-table td:last-child {
+  width: 160px; /* Actions */
+  min-width: 160px;
+  text-align: center;
+}
+
+.deliveries-table tbody tr:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.status-badge.pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.in_progress {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.delivered {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.cancelled {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Address columns specific styling */
+.deliveries-table td:nth-child(3),
+.deliveries-table td:nth-child(4) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fix actions cell to ensure buttons are always visible */
+.actions-cell {
+  position: sticky;
+  right: 0;
+  background: white;
+  z-index: 1;
+  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  color: white; /* Ensure icon color is white */
+}
+
+/* Ensure icons are properly sized */
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.modify-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.modify-btn:hover {
+  background-color: #0056b3;
+}
+
+.cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.status-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.8rem;
+  min-width: 130px;
+  color: #495057;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.no-deliveries {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6c757d;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.no-deliveries p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* Responsive styles */
+@media (max-width: 1400px) {
+  .delivery-list-container {
+    margin: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .deliveries-table {
+    min-width: 1000px; /* Reduce minimum width on larger screens */
+  }
+}
+
+@media (max-width: 1200px) {
+  .delivery-list-container {
+    margin: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .deliveries-table {
+    min-width: 900px; /* Reduce minimum width on smaller screens */
+  }
+  
+  .deliveries-table th,
+  .deliveries-table td {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.85rem;
+  }
+  
+  .status-select {
+    min-width: 100px;
+  }
+
+  .add-delivery-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Make table scrollable on mobile */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .delivery-list-container {
+    padding: 10px;
+    margin: 5px;
+  }
+  
+  .delivery-list-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .header-left {
+    text-align: center;
+  }
+  
+  .add-delivery-btn {
+    align-self: center;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .deliveries-table {
+    min-width: 800px;
+  }
+  
+  .deliveries-table th,
+  .deliveries-table td {
+    padding: 8px 4px;
+    font-size: 13px;
+  }
+}
+
+/* Fix for very small screens - make table scroll horizontally */
+@media (max-width: 480px) {
+  .delivery-list-container {
+    padding: 5px;
+    margin: 2px;
+  }
+  
+  .deliveries-table {
+    min-width: 700px;
+  }
+  
+  .deliveries-table th,
+  .deliveries-table td {
+    padding: 6px 3px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 992px) {
+  .delivery-list-container {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .delivery-list-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .header-left {
+    text-align: center;
+  }
+  
+  .add-delivery-btn {
+    align-self: center;
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
+  }
+  
+  .table-responsive {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  .deliveries-table {
+    display: flex;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .deliveries-table thead {
+    display: none;
+  }
+  
+  .deliveries-table tbody {
+    display: block;
+  }
+  
+  .deliveries-table tr {
+    display: block;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .deliveries-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .deliveries-table td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 1rem;
+    color: #495057;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+  
+  .deliveries-table td.actions-cell {
+    justify-content: flex-end;
+    padding-top: 1rem;
+    padding-bottom: 0;
+  }
+  
+  .deliveries-table td.actions-cell:before {
+    display: none;
+  }
+  
+  .table-actions {
+    justify-content: flex-end;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .status-select {
+    min-width: 140px;
+    margin-bottom: 0;
+  }
+}

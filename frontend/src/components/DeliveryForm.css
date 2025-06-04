@@ -1,0 +1,248 @@
+.delivery-form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.price-breakdown {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.price-breakdown::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+}
+
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 1rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  color: #333;
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* Style for select elements with a selected value */
+.select-wrapper select.has-value {
+  color: #333;
+  font-weight: 500;
+  background-color: #f8f9ff;
+}
+
+/* Ensure the selected option is visible */
+.select-wrapper select option {
+  color: #333;
+  background-color: white;
+}
+
+.select-wrapper select option:checked {
+  background-color: #e0e7ff;
+  color: #333;
+  font-weight: 500;
+}
+
+.distance-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #f3f4f6;
+  border-radius: 8px;
+}
+
+.distance-icon {
+  color: #6366f1;
+  font-size: 1.25rem;
+}
+
+.calculating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: #f0f9ff;
+  color: #0284c7;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-left: 1rem;
+}
+
+.calculating-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.delivery-estimate {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  background-color: #f0f9ff;
+  border-radius: 8px;
+  border-left: 3px solid #0284c7;
+}
+
+.delivery-estimate .info-icon {
+  color: #0284c7;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.delivery-estimate p {
+  margin: 0;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.price-breakdown h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.price-breakdown p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.price-breakdown h4 {
+  margin: 1rem 0 0 0;
+  color: #2196F3;
+  font-size: 1.25rem;
+}
+
+.price-breakdown h4::before {
+  content: 'Total: $';
+  font-size: 0.875rem;
+  color: #333;
+}
+
+.submit-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.delivery-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.delivery-form h3 {
+  margin: 0.5rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.address-fields {
+  background-color: rgba(245, 245, 245, 0.6);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.submit-btn {
+  padding: 1rem;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #45a049;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}

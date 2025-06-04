@@ -1,0 +1,273 @@
+.price-display {
+  background: #fff;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  animation: slideIn 0.3s ease-out;
+}
+
+.price-display:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.price-display.loading {
+  background: #f8f9ff;
+  border-color: #007bff;
+}
+
+.price-display.error {
+  background: #fff5f5;
+  border-color: #dc3545;
+}
+
+.price-display.empty {
+  background: #f8f9fa;
+  border-color: #e9ecef;
+  border-style: dashed;
+}
+
+/* Header */
+.price-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.total-price {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.total-price svg {
+  font-size: 1.25rem;
+  color: #007bff;
+}
+
+.price-amount {
+  font-size: 1.75rem;
+  color: #007bff;
+}
+
+.distance-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Loading State */
+.price-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Error State */
+.price-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.error-icon {
+  font-size: 1.25rem;
+}
+
+/* Empty State */
+.price-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-align: center;
+}
+
+.price-empty svg {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* Breakdown */
+.price-breakdown h4 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breakdown-item,
+.breakdown-subtotal,
+.breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.breakdown-item {
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.breakdown-subtotal {
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 600;
+  color: #495057;
+  margin-top: 0.5rem;
+}
+
+.breakdown-total {
+  border-top: 2px solid #007bff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #007bff;
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+}
+
+.breakdown-item.shipping {
+  background: rgba(0, 123, 255, 0.03);
+  margin: 0.5rem -1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border-bottom: none;
+  border: 1px solid rgba(0, 123, 255, 0.1);
+}
+
+.item-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.item-value {
+  color: #495057;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.item-value small {
+  color: #6c757d;
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+/* Icons */
+.breakdown-item svg,
+.breakdown-total svg {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.breakdown-item.shipping svg {
+  color: #007bff;
+}
+
+.breakdown-total svg {
+  color: #007bff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .price-display {
+    padding: 1rem;
+    margin: 0.75rem 0;
+  }
+
+  .price-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .total-price {
+    font-size: 1.25rem;
+  }
+
+  .price-amount {
+    font-size: 1.5rem;
+  }
+
+  .distance-info {
+    font-size: 0.9rem;
+  }
+
+  .breakdown-item,
+  .breakdown-subtotal,
+  .breakdown-total {
+    padding: 0.5rem 0;
+  }
+
+  .item-label {
+    font-size: 0.9rem;
+  }
+
+  .item-value {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .price-header {
+    padding-bottom: 0.75rem;
+  }
+
+  .price-breakdown h4 {
+    font-size: 1rem;
+  }
+
+  .breakdown-item.shipping {
+    margin: 0 -0.5rem;
+    padding: 0.5rem;
+  }
+}
