@@ -1,6 +1,3 @@
-Here’s a README.md template for your belivery-app, with instructions to download and install all dependencies:
-
----
 
 # belivery-app
 
@@ -66,7 +63,7 @@ Follow these steps to download and set up the project on your local machine.
 6. **Build front-end assets**
 
    ```bash
-   npm run dev
+   npm start
    ```
 
 7. **Start the development server**
