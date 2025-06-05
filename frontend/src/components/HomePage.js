@@ -56,7 +56,7 @@ const HomePage = ({ onNavigate }) => {
         </div>
         <div className="hero-image">
           <img
-            src="https://previews.123rf.com/images/andreypopov/andreypopov1507/andreypopov150700656/42611845-happy-delivery-man-holding-box-in-front-van.jpg"
+            src="hero-image.jpg"
             alt="Happy delivery man with package"
           />
         </div>
@@ -106,8 +106,7 @@ const HomePage = ({ onNavigate }) => {
           <div className="service-card featured">
             <div className="service-image">
               <img
-                src="https://png.pngtree.com/png-clipart/20241003/original/pngtree-delivery-guy-riding-scooter-png-image_16174921.png"
-                alt="Delivery person on scooter"
+                src="https://imgs.search.brave.com/RrBD5VIn4MwEFbGJECG_ahJc5PLFpfxdvJHIvuYQmi8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTA3/NDk0MjA3NC9waG90/by9kZWxpdmVyeS1t/YW4uanBnP3M9NjEy/eDYxMiZ3PTAmaz0y/MCZjPUFUdkZXNGVn/SEtVVU1VTFpDaHNQ/eE1UVnlwRlVPSWYw/bExnWDlGOE1xNTQ9"
               />
             </div>
             <div className="service-icon">

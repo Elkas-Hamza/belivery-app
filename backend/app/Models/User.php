@@ -61,12 +61,12 @@ class User extends Authenticatable
         if (!$value) {
             return null;
         }
-
+        
         // If the value already contains a full URL, return as is
         if (str_contains($value, 'http')) {
             return $value;
         }
-
+        
         // Return the full URL for the stored path
         return url('storage/' . $value);
     }

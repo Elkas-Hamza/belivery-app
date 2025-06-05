@@ -12,10 +12,10 @@ import AddressSelector from "./AddressSelector";
 import ShippingMethodSelector from "./ShippingMethodSelector";
 import PriceDisplay from "./PriceDisplay";
 import priceCalculationService from "../services/priceCalculationService";
+import ArrivalDateService from "../services/arrivalDateService";
 import "./DeliveryFormModal.css";
 
-const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
-  const [formData, setFormData] = useState({
+const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData, setFormData] = useState({
     pickup_address: "",
     delivery_address: "",
     contact_number: "",
@@ -69,17 +69,25 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
           pickupCountry,
           deliveryCountry,
           formData.shipping_method
-        );
-
-        const result = await priceCalculationService.calculateFromAddresses(
+        );        const result = await priceCalculationService.calculateFromAddresses(
           formData.pickup_address,
           formData.delivery_address,
           formData.weight,
           shippingMethod
         );
 
+        // Calculate arrival date based on distance and shipping method
+        const arrivalDate = ArrivalDateService.calculateArrivalDate(
+          result.distance,
+          shippingMethod
+        );
+
         setPriceData(result);
-        setFormData((prev) => ({ ...prev, price: result.price.toString() }));
+        setFormData((prev) => ({ 
+          ...prev, 
+          price: result.price.toString(),
+          arrival_date: arrivalDate || ""
+        }));
       } catch (error) {
         console.error("Price calculation failed:", error);
         setPriceError(
@@ -158,8 +166,7 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
     setLoading(true);
     setError(null);
 
-    try {
-      const response = await api.post("/deliveries", {
+    try {      const response = await api.post("/deliveries", {
         ...formData,
         weight: parseFloat(formData.weight),
         price: parseFloat(formData.price),
@@ -299,22 +306,23 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
                 Price is calculated automatically based on weight, distance, and
                 shipping method
               </small>
-            </div>{" "}
-          </div>{" "}
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="arrival_date">Expected Arrival Date</label>
+            </div>          </div>{" "}
+          <div className="form-row">            <div className="form-group">
+              <label htmlFor="arrival_date">Date d'Arrivée Prévue</label>
               <input
                 type="date"
                 id="arrival_date"
                 name="arrival_date"
                 value={formData.arrival_date}
                 onChange={handleInputChange}
-                placeholder="Select expected arrival date"
-                min={new Date().toISOString().split("T")[0]}
+                min={new Date().toISOString().split('T')[0]}
+                className={formData.arrival_date ? "calculated" : ""}
               />
               <small className="help-text">
-                Optional: Select the expected arrival date for this delivery
+                {formData.arrival_date 
+                  ? `Calculé automatiquement basé sur la distance et méthode d'expédition. ${priceData?.distance ? `Distance: ${priceData.distance.toFixed(0)}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(priceData.distance, formData.shipping_method)}` : ''}`
+                  : "Sera calculé automatiquement une fois les adresses et la méthode d'expédition sélectionnées"
+                }
               </small>
             </div>
           </div>

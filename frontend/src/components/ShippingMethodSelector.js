@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  FaPlane,
-  FaShip,
-  FaTruck,
-  FaClock,
-  FaDollarSign,
-} from "react-icons/fa";
+import { FaPlane, FaShip, FaTruck, FaClock, FaDollarSign } from "react-icons/fa";
 import "./ShippingMethodSelector.css";
 
 const ShippingMethodSelector = ({

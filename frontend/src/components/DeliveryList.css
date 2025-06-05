@@ -1,12 +1,11 @@
 .delivery-list-container {
   max-width: 100%;
-  margin: 1rem auto;
+  margin: 1rem;
   padding: 1rem;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  box-sizing: border-box;
 }
 
 @media (min-width: 1400px) {
@@ -23,8 +22,7 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  border-bottom: 1px solid #eee;
 }
 
 .header-left {
@@ -76,30 +74,6 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  /* Add scrollbar styling for better UX */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
-}
-
-.table-responsive::-webkit-scrollbar {
-  height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-  background: #f7fafc;
-  border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 4px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
 }
 
 .deliveries-table {
@@ -109,13 +83,13 @@
   font-size: 0.9rem;
   min-width: 1200px; /* Ensure table doesn't get too narrow */
   table-layout: fixed; /* Fixed layout for better column control */
-  background: white;
 }
 
 .deliveries-table th,
 .deliveries-table td {
   padding: 0.75rem 0.5rem;
   text-align: left;
+  border-bottom: 1px solid #eee;
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
@@ -132,11 +106,12 @@
   font-size: 0.8rem;
   color: #555;
   letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
 }
 .deliveries-table th:nth-child(1),
 .deliveries-table td:nth-child(1) {
-  width: 60px; /* ID */
-  min-width: 60px;
+  width: 70px; /* ID */
+  min-width: 70px;
 }
 
 .deliveries-table th:nth-child(2),
@@ -147,35 +122,35 @@
 
 .deliveries-table th:nth-child(3),
 .deliveries-table td:nth-child(3) {
-  width: 200px; /* Pickup Address */
+  width: 18%; /* Pickup Address */
   min-width: 180px;
-  max-width: 250px;
+  max-width: 220px;
 }
 
 .deliveries-table th:nth-child(4),
 .deliveries-table td:nth-child(4) {
-  width: 200px; /* Delivery Address */
+  width: 18%; /* Delivery Address */
   min-width: 180px;
-  max-width: 250px;
+  max-width: 220px;
 }
 
 .deliveries-table th:nth-child(5),
 .deliveries-table td:nth-child(5) {
-  width: 140px; /* Contact */
-  min-width: 140px;
+  width: 130px; /* Contact */
+  min-width: 130px;
 }
 
 .deliveries-table th:nth-child(6),
 .deliveries-table td:nth-child(6) {
-  width: 100px; /* Weight */
-  min-width: 100px;
+  width: 90px; /* Weight */
+  min-width: 90px;
   text-align: right;
 }
 
 .deliveries-table th:nth-child(7),
 .deliveries-table td:nth-child(7) {
-  width: 100px; /* Price */
-  min-width: 100px;
+  width: 120px; /* Price */
+  min-width: 120px;
   text-align: right;
   font-weight: 500;
   font-size: 0.95rem;
@@ -187,22 +162,32 @@
   min-width: 140px;
 }
 
-.deliveries-table th:nth-child(9),
-.deliveries-table td:nth-child(9) {
-  width: 140px; /* Arrival Date */
-  min-width: 140px;
-}
-
 .deliveries-table th:last-child,
 .deliveries-table td:last-child {
   width: 160px; /* Actions */
   min-width: 160px;
-  text-align: center;
+  text-align: right;
 }
 
 .deliveries-table tbody tr:hover {
   background-color: #f8f9fa;
   transition: background-color 0.2s ease;
+}
+
+.deliveries-table tbody tr.status-pending {
+  border-left: 4px solid #ffc107;
+}
+
+.deliveries-table tbody tr.status-in_progress {
+  border-left: 4px solid #007bff;
+}
+
+.deliveries-table tbody tr.status-delivered {
+  border-left: 4px solid #28a745;
+}
+
+.deliveries-table tbody tr.status-cancelled {
+  border-left: 4px solid #dc3545;
 }
 
 .status-badge {
@@ -249,27 +234,17 @@
   text-overflow: ellipsis;
 }
 
-/* Fix actions cell to ensure buttons are always visible */
-.actions-cell {
-  position: sticky;
-  right: 0;
-  background: white;
-  z-index: 1;
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
-}
-
 .table-actions {
   display: flex;
-  flex-direction: column;
   gap: 0.5rem;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .action-buttons {
   display: flex;
   gap: 0.75rem;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .action-btn {
@@ -347,6 +322,7 @@
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 12px;
   margin-top: 1rem;
+  border: 1px solid #dee2e6;
 }
 
 .no-deliveries p {
@@ -356,17 +332,6 @@
 }
 
 /* Responsive styles */
-@media (max-width: 1400px) {
-  .delivery-list-container {
-    margin: 0.5rem;
-    padding: 1rem;
-  }
-  
-  .deliveries-table {
-    min-width: 1000px; /* Reduce minimum width on larger screens */
-  }
-}
-
 @media (max-width: 1200px) {
   .delivery-list-container {
     margin: 0.5rem;
@@ -374,7 +339,7 @@
   }
   
   .deliveries-table {
-    min-width: 900px; /* Reduce minimum width on smaller screens */
+    min-width: 1000px; /* Reduce minimum width on smaller screens */
   }
   
   .deliveries-table th,
@@ -397,61 +362,11 @@
 .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  margin: 0;
-  padding: 0;
-  width: 100%;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+  width: calc(100% + 2rem);
   border-radius: 8px;
-}
-
-@media (max-width: 768px) {
-  .delivery-list-container {
-    padding: 10px;
-    margin: 5px;
-  }
-  
-  .delivery-list-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .header-left {
-    text-align: center;
-  }
-  
-  .add-delivery-btn {
-    align-self: center;
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .deliveries-table {
-    min-width: 800px;
-  }
-  
-  .deliveries-table th,
-  .deliveries-table td {
-    padding: 8px 4px;
-    font-size: 13px;
-  }
-}
-
-/* Fix for very small screens - make table scroll horizontally */
-@media (max-width: 480px) {
-  .delivery-list-container {
-    padding: 5px;
-    margin: 2px;
-  }
-  
-  .deliveries-table {
-    min-width: 700px;
-  }
-  
-  .deliveries-table th,
-  .deliveries-table td {
-    padding: 6px 3px;
-    font-size: 12px;
-  }
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 992px) {
@@ -484,7 +399,7 @@
   }
   
   .deliveries-table {
-    display: flex;
+    display: block;
     min-width: auto;
     width: 100%;
   }
@@ -500,6 +415,7 @@
   .deliveries-table tr {
     display: block;
     margin-bottom: 1.5rem;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
     padding: 1rem;
     background: white;
@@ -511,8 +427,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 0;
+    border: none;
+    border-bottom: 1px solid #f8f9fa;
     width: 100%;
     box-sizing: border-box;
+  }
+  
+  .deliveries-table td:last-child {
+    border-bottom: none;
   }
   
   .deliveries-table td:before {

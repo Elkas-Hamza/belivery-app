@@ -102,8 +102,7 @@ export const priceCalculationService = {
    * Get shipping method details
    */
   getShippingMethodDetails() {
-    return {
-      air: {
+    return {      air: {
         name: "Air Freight",
         multiplier: 2.5,
         description: "Fast delivery by air (3-7 days)",

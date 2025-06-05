@@ -306,6 +306,30 @@
   transform: none !important;
 }
 
+/* Calculated arrival date styling */
+.form-group input[type="date"].calculated {
+  background-color: #f8f9fa;
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-group input[type="date"].calculated:focus {
+  border-color: #20c997;
+  box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+}
+
+.help-text {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+.help-text strong {
+  color: #28a745;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .delivery-form-modal {

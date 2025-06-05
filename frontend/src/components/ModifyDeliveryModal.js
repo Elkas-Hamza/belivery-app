@@ -12,19 +12,17 @@ import AddressSelector from "./AddressSelector";
 import ShippingMethodSelector from "./ShippingMethodSelector";
 import PriceDisplay from "./PriceDisplay";
 import priceCalculationService from "../services/priceCalculationService";
+import ArrivalDateService from "../services/arrivalDateService";
 import "./DeliveryFormModal.css";
 
-const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
-  const [formData, setFormData] = useState({
+const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  const [formData, setFormData] = useState({
     pickup_address: delivery?.pickup_address || "",
     delivery_address: delivery?.delivery_address || "",
     contact_number: delivery?.contact_number || "",
     weight: delivery?.weight || "",
     price: delivery?.price || "",
     notes: delivery?.notes || "",
-    arrival_date: delivery?.arrival_date
-      ? delivery.arrival_date.split("T")[0]
-      : "",
+    arrival_date: delivery?.arrival_date ? delivery.arrival_date.split('T')[0] : "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -105,12 +103,16 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
   const calculatePrice = async () => {
     try {
       setPriceLoading(true);
-      setPriceError(null);
-
-      const result = await priceCalculationService.calculateFromAddresses(
+      setPriceError(null);      const result = await priceCalculationService.calculateFromAddresses(
         formData.pickup_address,
         formData.delivery_address,
         formData.weight,
+        shippingMethod
+      );
+
+      // Calculate arrival date based on distance and shipping method
+      const arrivalDate = ArrivalDateService.calculateArrivalDate(
+        result.distance,
         shippingMethod
       );
 
@@ -118,6 +120,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
       setFormData((prev) => ({
         ...prev,
         price: result.total,
+        arrival_date: arrivalDate || prev.arrival_date, // Keep existing if calculation fails
       }));
     } catch (error) {
       console.error("Error calculating price:", error);
@@ -213,7 +216,6 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
         weight: parseFloat(formData.weight),
         price: parseFloat(formData.price),
         notes: formData.notes || null,
-        arrival_date: formData.arrival_date || null,
       });
 
       onDeliveryUpdated(response.data);
@@ -353,21 +355,21 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
               distance={priceData?.distance}
               loading={priceLoading}
               error={priceError}
-            />
-          )}
-
-          <div className="form-group">
-            <label>Expected Arrival Date</label>
+            />          )}          <div className="form-group">
+            <label>Date d'Arrivée Prévue</label>
             <input
               type="date"
               name="arrival_date"
               value={formData.arrival_date}
               onChange={handleInputChange}
-              placeholder="Select expected arrival date"
-              min={new Date().toISOString().split("T")[0]}
+              min={new Date().toISOString().split('T')[0]}
+              className={formData.arrival_date ? "calculated" : ""}
             />
             <small className="help-text">
-              Optional: Select the expected arrival date for this delivery
+              {formData.arrival_date 
+                ? `Recalculé automatiquement basé sur la distance et méthode d'expédition. ${priceData?.distance ? `Distance: ${priceData.distance.toFixed(0)}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(priceData.distance, shippingMethod)}` : ''}`
+                : "Sera recalculé automatiquement lors de la modification des adresses"
+              }
             </small>
           </div>
 

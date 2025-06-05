@@ -174,7 +174,7 @@ const DeliveryList = ({ onViewDetails }) => {
                 <th>Weight (kg)</th>
                 <th>Price</th>
                 <th>Created</th>
-                <th>Arrival Date</th>
+                <th>Date d'Arrivée</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -216,12 +216,14 @@ const DeliveryList = ({ onViewDetails }) => {
                   <td className="date" data-label="Created">
                     {formatDate(delivery.created_at)}
                   </td>
-                  <td className="date" data-label="Arrival Date">
-                    {delivery.arrival_date
-                      ? formatDate(delivery.arrival_date)
-                      : "Not set"}
+                  <td className="date" data-label="Date d'Arrivée">
+                    {delivery.arrival_date ? formatDate(delivery.arrival_date) : "Non définie"}
                   </td>
-                  <td className="actions-cell" data-label="Actions">
+                  <td
+                    className="actions-cell"
+                    style={{ alignContent: "center" }}
+                    data-label="Actions"
+                  >
                     <div className="table-actions">
                       {isAdmin && (
                         <select
