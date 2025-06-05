@@ -81,29 +81,29 @@ class DeliveriesTableSeeder extends Seeder
         for ($i = 0; $i < 15; $i++) {
             $user = $users->random();
             $weight = rand(100, 2000) / 100; // 1.00 to 20.00 kg
-            
+
             // Select random pickup and delivery cities
             $pickupCity = $cities[array_rand($cities)];
             $deliveryCity = $cities[array_rand($cities)];
-            
+
             // Ensure pickup and delivery are different cities
             while ($pickupCity === $deliveryCity) {
                 $deliveryCity = $cities[array_rand($cities)];
             }
-            
+
             $pickupAddress = $addressData[$pickupCity]['address'];
             $deliveryAddress = $addressData[$deliveryCity]['address'];
-            
+
             // Get distance between cities
             $distance = $cityDistances[$pickupCity][$deliveryCity];
-            
+
             // Determine shipping method (domestic for Morocco)
             $shippingMethod = 'domestic';
-            
+
             // Calculate price based on distance and weight
             $basePrice = ($distance * 0.5) + ($weight * 10);
             $price = $basePrice + rand(500, 2000) / 100; // Add some variation
-            
+
             // Calculate arrival date based on distance and shipping method
             $createdAt = now()->subDays(rand(0, 30))->subHours(rand(1, 24));
             $arrivalDate = ArrivalDateCalculator::calculateArrivalDate($distance, $shippingMethod, $createdAt);

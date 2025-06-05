@@ -15,14 +15,17 @@ import priceCalculationService from "../services/priceCalculationService";
 import ArrivalDateService from "../services/arrivalDateService";
 import "./DeliveryFormModal.css";
 
-const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  const [formData, setFormData] = useState({
+const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
+  const [formData, setFormData] = useState({
     pickup_address: delivery?.pickup_address || "",
     delivery_address: delivery?.delivery_address || "",
     contact_number: delivery?.contact_number || "",
     weight: delivery?.weight || "",
     price: delivery?.price || "",
     notes: delivery?.notes || "",
-    arrival_date: delivery?.arrival_date ? delivery.arrival_date.split('T')[0] : "",
+    arrival_date: delivery?.arrival_date
+      ? delivery.arrival_date.split("T")[0]
+      : "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -67,13 +70,13 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
       }
     }
   }, [delivery]);
-
   // Calculate price when form data changes
   useEffect(() => {
     if (
       formData.pickup_address &&
       formData.delivery_address &&
-      formData.weight
+      formData.weight &&
+      parseFloat(formData.weight) > 0
     ) {
       // Clear existing timeout
       if (calculationTimeout) {
@@ -83,7 +86,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
       // Set new timeout for debounced calculation
       const timeout = setTimeout(() => {
         calculatePrice();
-      }, 500);
+      }, 800); // Increase debounce time to 800ms
 
       setCalculationTimeout(timeout);
 
@@ -92,6 +95,13 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
           clearTimeout(timeout);
         }
       };
+    } else {
+      // Clear price data if required fields are empty
+      setPriceData(null);
+      setFormData((prev) => ({
+        ...prev,
+        price: "",
+      }));
     }
   }, [
     formData.pickup_address,
@@ -99,11 +109,11 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
     formData.weight,
     shippingMethod,
   ]);
-
   const calculatePrice = async () => {
     try {
       setPriceLoading(true);
-      setPriceError(null);      const result = await priceCalculationService.calculateFromAddresses(
+      setPriceError(null);
+      const result = await priceCalculationService.calculateFromAddresses(
         formData.pickup_address,
         formData.delivery_address,
         formData.weight,
@@ -119,7 +129,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
       setPriceData(result);
       setFormData((prev) => ({
         ...prev,
-        price: result.total,
+        price: result.price,  // Use result.price instead of result.total
         arrival_date: arrivalDate || prev.arrival_date, // Keep existing if calculation fails
       }));
     } catch (error) {
@@ -246,151 +256,196 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {  con
           <button className="close-btn" onClick={onClose}>
             <FaTimes />
           </button>
-        </div>
+        </div>        <form onSubmit={handleSubmit} className="delivery-form">
+          {/* Address Selection Row */}
+          <div className="address-section">
+            <h3>Addresses</h3>
+            <div className="form-row">
+              <div className="form-group">
+                <label>
+                  <FaMapMarkerAlt /> Pickup Address *
+                </label>
+                <AddressSelector
+                  value={formData.pickup_address}
+                  onChange={(address) =>
+                    handleAddressChange("pickup_address", address)
+                  }
+                  placeholder="Select pickup address"
+                  error={errors.pickup_address}
+                />
+                {errors.pickup_address && (
+                  <span className="error-message">{errors.pickup_address}</span>
+                )}
+              </div>
 
-        <form onSubmit={handleSubmit} className="delivery-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>
-                <FaMapMarkerAlt /> Pickup Address *
-              </label>
-              <AddressSelector
-                value={formData.pickup_address}
-                onChange={(address) =>
-                  handleAddressChange("pickup_address", address)
-                }
-                placeholder="Select pickup address"
-                error={errors.pickup_address}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                <FaMapMarkerAlt /> Delivery Address *
-              </label>
-              <AddressSelector
-                value={formData.delivery_address}
-                onChange={(address) =>
-                  handleAddressChange("delivery_address", address)
-                }
-                placeholder="Select delivery address"
-                error={errors.delivery_address}
-              />
+              <div className="form-group">
+                <label>
+                  <FaMapMarkerAlt /> Delivery Address *
+                </label>
+                <AddressSelector
+                  value={formData.delivery_address}
+                  onChange={(address) =>
+                    handleAddressChange("delivery_address", address)
+                  }
+                  placeholder="Select delivery address"
+                  error={errors.delivery_address}
+                />
+                {errors.delivery_address && (
+                  <span className="error-message">{errors.delivery_address}</span>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Shipping Method for International Deliveries */}
           {showInternationalShipping && (
-            <div className="shipping-method-row">
-              <ShippingMethodSelector
-                selectedMethod={shippingMethod}
-                onMethodChange={handleShippingMethodChange}
-                fromCountry={pickupCountry}
-                toCountry={deliveryCountry}
-              />
+            <div className="shipping-section">
+              <h3>Shipping Method</h3>
+              <div className="shipping-method-row">
+                <ShippingMethodSelector
+                  selectedMethod={shippingMethod}
+                  onMethodChange={handleShippingMethodChange}
+                  fromCountry={pickupCountry}
+                  toCountry={deliveryCountry}
+                />
+              </div>
             </div>
           )}
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>
-                <FaPhoneAlt /> Contact Number *
-              </label>
-              <input
-                type="tel"
-                name="contact_number"
-                value={formData.contact_number}
-                onChange={handleInputChange}
-                placeholder="Enter contact number"
-                className={errors.contact_number ? "error" : ""}
-              />
-              {errors.contact_number && (
-                <span className="error-message">{errors.contact_number}</span>
-              )}
-            </div>
+          {/* Package Details Section */}
+          <div className="package-section">
+            <h3>Package Details</h3>
+            <div className="form-row">
+              <div className="form-group">
+                <label>
+                  <FaPhoneAlt /> Contact Number *
+                </label>
+                <input
+                  type="tel"
+                  name="contact_number"
+                  value={formData.contact_number}
+                  onChange={handleInputChange}
+                  placeholder="Enter contact number"
+                  className={errors.contact_number ? "error" : ""}
+                />
+                {errors.contact_number && (
+                  <span className="error-message">{errors.contact_number}</span>
+                )}
+              </div>
 
+              <div className="form-group">
+                <label>
+                  <FaWeightHanging /> Weight (kg) *
+                </label>
+                <input
+                  type="number"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleInputChange}
+                  placeholder="Enter weight in kg"
+                  min="0.1"
+                  step="0.1"
+                  className={errors.weight ? "error" : ""}
+                />
+                {errors.weight && (
+                  <span className="error-message">{errors.weight}</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Price Calculation Section */}
+          <div className="price-section">
+            <h3>Price Calculation</h3>
             <div className="form-group">
               <label>
-                <FaWeightHanging /> Weight (kg) *
+                <FaCoins /> Calculated Price (DH) *
               </label>
               <input
                 type="number"
-                name="weight"
-                value={formData.weight}
+                name="price"
+                value={formData.price}
                 onChange={handleInputChange}
-                placeholder="Enter weight in kg"
+                placeholder="Price will be calculated automatically"
                 min="0"
-                step="0.1"
-                className={errors.weight ? "error" : ""}
+                step="0.01"
+                className={`price-input-readonly ${errors.price ? "error" : ""}`}
+                readOnly
               />
-              {errors.weight && (
-                <span className="error-message">{errors.weight}</span>
+              {errors.price && (
+                <span className="error-message">{errors.price}</span>
               )}
+              <small className="price-help-text">
+                Price is calculated automatically based on weight, distance, and shipping method
+              </small>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label>
-              <FaCoins /> Calculated Price (DH) *
-            </label>
-            <input
-              type="number"
-              name="price"
-              value={formData.price}
-              onChange={handleInputChange}
-              placeholder="Price will be calculated automatically"
-              min="0"
-              step="0.01"
-              className={errors.price ? "error" : ""}
-              readOnly
-            />
-            {errors.price && (
-              <span className="error-message">{errors.price}</span>
+            
+            {/* Price Display Component */}
+            {(priceData || priceLoading || priceError) && (
+              <PriceDisplay
+                price={priceData?.price}
+                breakdown={priceData?.breakdown}
+                distance={priceData?.distance}
+                loading={priceLoading}
+                error={priceError}
+                className="modal-price-display"
+              />
             )}
           </div>
 
-          {(priceData || priceLoading || priceError) && (
-            <PriceDisplay
-              price={priceData?.total}
-              breakdown={priceData?.breakdown}
-              distance={priceData?.distance}
-              loading={priceLoading}
-              error={priceError}
-            />          )}          <div className="form-group">
-            <label>Date d'Arrivée Prévue</label>
-            <input
-              type="date"
-              name="arrival_date"
-              value={formData.arrival_date}
-              onChange={handleInputChange}
-              min={new Date().toISOString().split('T')[0]}
-              className={formData.arrival_date ? "calculated" : ""}
-            />
-            <small className="help-text">
-              {formData.arrival_date 
-                ? `Recalculé automatiquement basé sur la distance et méthode d'expédition. ${priceData?.distance ? `Distance: ${priceData.distance.toFixed(0)}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(priceData.distance, shippingMethod)}` : ''}`
-                : "Sera recalculé automatiquement lors de la modification des adresses"
-              }
-            </small>
+          {/* Additional Details Section */}
+          <div className="additional-section">
+            <h3>Additional Details</h3>
+            <div className="form-group">
+              <label>Date d'Arrivée Prévue</label>
+              <input
+                type="date"
+                name="arrival_date"
+                value={formData.arrival_date}
+                onChange={handleInputChange}
+                min={new Date().toISOString().split("T")[0]}
+                className={formData.arrival_date ? "calculated" : ""}
+              />
+              <small className="help-text">
+                {formData.arrival_date
+                  ? `Recalculé automatiquement basé sur la distance et méthode d'expédition. ${
+                      priceData?.distance
+                        ? `Distance: ${priceData.distance.toFixed(
+                            0
+                          )}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(
+                            priceData.distance,
+                            shippingMethod
+                          )}`
+                        : ""
+                    }`
+                  : "Sera recalculé automatiquement lors de la modification des adresses"}
+              </small>
+            </div>
+            
+            <div className="form-group">
+              <label>
+                <FaTruck /> Additional Notes
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleInputChange}
+                placeholder="Enter any additional notes or special instructions"
+                rows="3"
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label>
-              <FaTruck /> Additional Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              placeholder="Enter any additional notes or special instructions"
-              rows="3"
-            />
-          </div>
-
+          {/* Form Actions */}
           <div className="form-actions">
             <button type="button" className="cancel-btn" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Updating..." : "Update Delivery"}
+            </button>
+          </div>
+        </form>
               {loading ? "Updating..." : "Update Delivery"}
             </button>
           </div>

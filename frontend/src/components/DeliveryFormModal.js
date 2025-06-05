@@ -15,7 +15,8 @@ import priceCalculationService from "../services/priceCalculationService";
 import ArrivalDateService from "../services/arrivalDateService";
 import "./DeliveryFormModal.css";
 
-const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData, setFormData] = useState({
+const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
+  const [formData, setFormData] = useState({
     pickup_address: "",
     delivery_address: "",
     contact_number: "",
@@ -69,7 +70,8 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData
           pickupCountry,
           deliveryCountry,
           formData.shipping_method
-        );        const result = await priceCalculationService.calculateFromAddresses(
+        );
+        const result = await priceCalculationService.calculateFromAddresses(
           formData.pickup_address,
           formData.delivery_address,
           formData.weight,
@@ -83,10 +85,10 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData
         );
 
         setPriceData(result);
-        setFormData((prev) => ({ 
-          ...prev, 
+        setFormData((prev) => ({
+          ...prev,
           price: result.price.toString(),
-          arrival_date: arrivalDate || ""
+          arrival_date: arrivalDate || "",
         }));
       } catch (error) {
         console.error("Price calculation failed:", error);
@@ -166,7 +168,8 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData
     setLoading(true);
     setError(null);
 
-    try {      const response = await api.post("/deliveries", {
+    try {
+      const response = await api.post("/deliveries", {
         ...formData,
         weight: parseFloat(formData.weight),
         price: parseFloat(formData.price),
@@ -306,8 +309,11 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData
                 Price is calculated automatically based on weight, distance, and
                 shipping method
               </small>
-            </div>          </div>{" "}
-          <div className="form-row">            <div className="form-group">
+            </div>{" "}
+          </div>{" "}
+          <div className="form-row">
+            {" "}
+            <div className="form-group">
               <label htmlFor="arrival_date">Date d'Arrivée Prévue</label>
               <input
                 type="date"
@@ -315,14 +321,22 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {  const [formData
                 name="arrival_date"
                 value={formData.arrival_date}
                 onChange={handleInputChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split("T")[0]}
                 className={formData.arrival_date ? "calculated" : ""}
               />
               <small className="help-text">
-                {formData.arrival_date 
-                  ? `Calculé automatiquement basé sur la distance et méthode d'expédition. ${priceData?.distance ? `Distance: ${priceData.distance.toFixed(0)}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(priceData.distance, formData.shipping_method)}` : ''}`
-                  : "Sera calculé automatiquement une fois les adresses et la méthode d'expédition sélectionnées"
-                }
+                {formData.arrival_date
+                  ? `Calculé automatiquement basé sur la distance et méthode d'expédition. ${
+                      priceData?.distance
+                        ? `Distance: ${priceData.distance.toFixed(
+                            0
+                          )}km, Estimation: ${ArrivalDateService.getTransitTimeEstimate(
+                            priceData.distance,
+                            formData.shipping_method
+                          )}`
+                        : ""
+                    }`
+                  : "Sera calculé automatiquement une fois les adresses et la méthode d'expédition sélectionnées"}
               </small>
             </div>
           </div>

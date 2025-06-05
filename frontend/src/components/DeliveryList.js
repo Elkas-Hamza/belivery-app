@@ -217,7 +217,9 @@ const DeliveryList = ({ onViewDetails }) => {
                     {formatDate(delivery.created_at)}
                   </td>
                   <td className="date" data-label="Date d'Arrivée">
-                    {delivery.arrival_date ? formatDate(delivery.arrival_date) : "Non définie"}
+                    {delivery.arrival_date
+                      ? formatDate(delivery.arrival_date)
+                      : "Non définie"}
                   </td>
                   <td
                     className="actions-cell"
