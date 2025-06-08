@@ -4,9 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DeliveryController extends Controller
 {
@@ -87,11 +89,67 @@ class DeliveryController extends Controller
             'status' => 'required|in:pending,in_progress,delivered,cancelled',
         ]);
 
-        $delivery->update([
-            'status' => $validated['status']
-        ]);
+        try {
+            DB::beginTransaction();
 
-        return response()->json($delivery);
+            $updateData = ['status' => $validated['status']];
+
+            // If status is being set to 'delivered' and actual_arrival_date is not set, set it to now
+            if ($validated['status'] === 'delivered' && is_null($delivery->actual_arrival_date)) {
+                $updateData['actual_arrival_date'] = now();
+            }
+
+            $delivery->update($updateData);
+
+            // Update the corresponding order status based on delivery status
+            $order = $delivery->order;
+            if ($order) {
+                $orderStatus = $this->mapDeliveryStatusToOrderStatus($validated['status']);
+                $order->update(['status' => $orderStatus]);
+
+                \Log::info('Order status updated with delivery', [
+                    'delivery_id' => $delivery->id,
+                    'order_id' => $order->id,
+                    'delivery_status' => $validated['status'],
+                    'order_status' => $orderStatus
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'delivery' => $delivery,
+                'order' => $order,
+                'message' => 'Delivery and order status updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            \Log::error('Error updating delivery status', [
+                'error' => $e->getMessage(),
+                'delivery_id' => $delivery->id
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while updating the status',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Map delivery status to corresponding order status
+     */
+    private function mapDeliveryStatusToOrderStatus($deliveryStatus)
+    {
+        return match($deliveryStatus) {
+            'pending' => 'pending',
+            'in_progress' => 'processing',
+            'delivered' => 'completed',
+            'cancelled' => 'cancelled',
+            default => 'pending'
+        };
     }
 
     /**
@@ -199,7 +257,7 @@ class DeliveryController extends Controller
     {
         $completedDeliveries = $deliveries->where('status', 'delivered')
             ->filter(function ($delivery) {
-                return !is_null($delivery->created_at) && !is_null($delivery->updated_at);
+                return !is_null($delivery->created_at) && !is_null($delivery->actual_arrival_date);
             });
 
         if ($completedDeliveries->isEmpty()) {
@@ -208,7 +266,7 @@ class DeliveryController extends Controller
 
         $totalHours = 0;
         foreach ($completedDeliveries as $delivery) {
-            $totalHours += $delivery->created_at->diffInHours($delivery->updated_at);
+            $totalHours += $delivery->created_at->diffInHours($delivery->actual_arrival_date);
         }
 
         return round($totalHours / $completedDeliveries->count(), 1);
@@ -251,20 +309,70 @@ class DeliveryController extends Controller
             'weight' => 'required|numeric|min:0',
             'price' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
+            'shipping_method' => 'nullable|string|in:air,sea,truck,domestic',
+            'estimated_arrival_date' => 'nullable|date',
+            'actual_arrival_date' => 'nullable|date',
         ]);
 
-        $delivery = Delivery::create([
-            'user_id' => auth()->id(),
-            'pickup_address' => $validated['pickup_address'],
-            'delivery_address' => $validated['delivery_address'],
-            'contact_number' => $validated['contact_number'],
-            'weight' => $validated['weight'],
-            'price' => $validated['price'],
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'pending'
-        ]);
+        try {
+            // Start a database transaction to ensure consistency
+            \DB::beginTransaction();
 
-        return response()->json($delivery, 201);
+            // Create the delivery
+            $delivery = Delivery::create([
+                'user_id' => auth()->id(),
+                'pickup_address' => $validated['pickup_address'],
+                'delivery_address' => $validated['delivery_address'],
+                'contact_number' => $validated['contact_number'],
+                'weight' => $validated['weight'],
+                'price' => $validated['price'],
+                'notes' => $validated['notes'] ?? null,
+                'shipping_method' => $validated['shipping_method'] ?? 'domestic',
+                'estimated_arrival_date' => $validated['estimated_arrival_date'] ?? null,
+                'actual_arrival_date' => $validated['actual_arrival_date'] ?? null,
+                'status' => 'pending'
+            ]);
+
+            // Automatically create an associated order
+            $order = Order::create([
+                'user_id' => auth()->id(),
+                'delivery_id' => $delivery->id,
+                'amount' => $validated['price'], // Use the delivery price as the order amount
+                'status' => 'pending' // Start with pending status
+            ]);
+
+            // Commit the transaction
+            \DB::commit();
+
+            // Log the successful creation
+            \Log::info('Delivery and order created successfully', [
+                'delivery_id' => $delivery->id,
+                'order_id' => $order->id,
+                'user_id' => auth()->id()
+            ]);
+
+            // Return the delivery with the associated order
+            return response()->json([
+                'delivery' => $delivery,
+                'order' => $order,
+                'message' => 'Delivery and order created successfully'
+            ], 201);
+
+        } catch (\Exception $e) {
+            // Rollback the transaction
+            \DB::rollback();
+
+            // Log the error
+            \Log::error('Error creating delivery and order', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'message' => 'An error occurred while creating the delivery and order',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
     }
 
     /**
@@ -292,6 +400,9 @@ class DeliveryController extends Controller
                 'weight' => 'required|numeric|min:0',
                 'price' => 'required|numeric|min:0',
                 'notes' => 'nullable|string',
+                'shipping_method' => 'nullable|string|in:air,sea,truck,domestic',
+                'estimated_arrival_date' => 'nullable|date',
+                'actual_arrival_date' => 'nullable|date',
             ]);
 
             $delivery->update([
@@ -301,6 +412,9 @@ class DeliveryController extends Controller
                 'weight' => $validated['weight'],
                 'price' => $validated['price'],
                 'notes' => $validated['notes'] ?? null,
+                'shipping_method' => $validated['shipping_method'] ?? $delivery->shipping_method,
+                'estimated_arrival_date' => $validated['estimated_arrival_date'] ?? $delivery->estimated_arrival_date,
+                'actual_arrival_date' => $validated['actual_arrival_date'] ?? $delivery->actual_arrival_date,
             ]);
 
             return response()->json($delivery->load('user'));
@@ -336,11 +450,33 @@ class DeliveryController extends Controller
                 ], 422);
             }
 
+            DB::beginTransaction();
+
             $delivery->update(['status' => 'cancelled']);
 
-            return response()->json($delivery->load('user'));
+            // Also cancel the corresponding order
+            $order = $delivery->order;
+            if ($order) {
+                $order->update(['status' => 'cancelled']);
+
+                \Log::info('Order cancelled with delivery', [
+                    'delivery_id' => $delivery->id,
+                    'order_id' => $order->id,
+                    'user_id' => auth()->id()
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'delivery' => $delivery->load('user'),
+                'order' => $order,
+                'message' => 'Delivery and order cancelled successfully'
+            ]);
 
         } catch (\Exception $e) {
+            DB::rollback();
+
             \Log::error('Error cancelling user delivery', [
                 'error' => $e->getMessage(),
                 'delivery_id' => $delivery->id,

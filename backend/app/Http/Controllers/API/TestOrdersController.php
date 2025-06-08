@@ -19,26 +19,26 @@ class TestOrdersController extends Controller
         try {
             // Log that we're starting the test
             Log::info('Starting orders diagnostic test');
-            
+
             // Check if orders table exists
             $tableExists = DB::getSchemaBuilder()->hasTable('orders');
-            
+
             // Get table structure
             $columns = [];
             if ($tableExists) {
                 $columns = DB::getSchemaBuilder()->getColumnListing('orders');
             }
-            
+
             // Count orders
             $orderCount = 0;
             if ($tableExists) {
                 $orderCount = Order::count();
             }
-            
+
             // Try the original query from AdminController but with error catching
             $orders = [];
             $queryError = null;
-            
+
             try {
                 if ($tableExists) {
                     $orders = DB::table('orders')
@@ -50,7 +50,6 @@ class TestOrdersController extends Controller
                             'orders.delivery_id',
                             'orders.amount',
                             'orders.status',
-                            'orders.payment_method',
                             'orders.created_at'
                         )
                         ->limit(2)
@@ -60,7 +59,7 @@ class TestOrdersController extends Controller
                 $queryError = $e->getMessage();
                 Log::error('Query error: ' . $e->getMessage());
             }
-            
+
             return response()->json([
                 'success' => true,
                 'table_exists' => $tableExists,
@@ -69,7 +68,7 @@ class TestOrdersController extends Controller
                 'query_error' => $queryError,
                 'sample_orders' => $orders
             ]);
-            
+
         } catch (\Exception $e) {
             Log::error('Diagnostic error: ' . $e->getMessage());
             return response()->json([

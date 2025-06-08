@@ -11,7 +11,9 @@ export const TranslationProvider = ({ children }) => {
 
   // Format currency to DH (Moroccan Dirham)
   const formatCurrency = (amount) => {
-    return `${Number(amount).toFixed(2)} DH`;
+    const numAmount =
+      typeof amount === "number" ? amount : parseFloat(amount || 0);
+    return `${isNaN(numAmount) ? 0 : numAmount.toFixed(2)} DH`;
   };
 
   // Export the context value

@@ -21,7 +21,7 @@ class DevController extends Controller
             $users = User::select('id', 'name', 'email', 'role', 'profile_image', 'created_at')
                 ->orderBy('created_at', 'desc')
                 ->get();
-                
+
             return response()->json($users);
         } catch (\Exception $e) {
             Log::error('Dev Error fetching users: ' . $e->getMessage());
@@ -31,7 +31,7 @@ class DevController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get all deliveries (public access for development)
      */
@@ -54,10 +54,13 @@ class DevController extends Controller
                         'price' => $delivery->price,
                         'status' => $delivery->status,
                         'notes' => $delivery->notes,
+                        'shipping_method' => $delivery->shipping_method,
+                        'estimated_arrival_date' => $delivery->estimated_arrival_date,
+                        'actual_arrival_date' => $delivery->actual_arrival_date,
                         'created_at' => $delivery->created_at
                     ];
                 });
-                
+
             return response()->json($deliveries);
         } catch (\Exception $e) {
             Log::error('Dev Error fetching deliveries: ' . $e->getMessage());
@@ -67,7 +70,7 @@ class DevController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get all orders (public access for development)
      */
@@ -85,11 +88,10 @@ class DevController extends Controller
                         'delivery_id' => $order->delivery_id,
                         'amount' => $order->amount,
                         'status' => $order->status,
-                        'payment_method' => $order->payment_method,
                         'created_at' => $order->created_at
                     ];
                 });
-                
+
             return response()->json($orders);
         } catch (\Exception $e) {
             Log::error('Dev Error fetching orders: ' . $e->getMessage());
@@ -99,7 +101,7 @@ class DevController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get admin dashboard statistics (public access for development)
      */
@@ -110,7 +112,7 @@ class DevController extends Controller
             $activeOrdersCount = Order::whereIn('status', ['pending', 'processing'])->count();
             $usersCount = User::count();
             $revenue = Order::where('status', 'completed')->sum('amount');
-            
+
             return response()->json([
                 'deliveries' => $deliveriesCount,
                 'activeOrders' => $activeOrdersCount,
@@ -127,7 +129,7 @@ class DevController extends Controller
             ]);
         }
     }
-    
+
     /**
      * Get orders for a specific user (public access for development)
      */
@@ -136,7 +138,7 @@ class DevController extends Controller
         try {
             // Get the user
             $user = User::findOrFail($userId);
-            
+
             // Get user's orders
             $orders = Order::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
@@ -147,17 +149,16 @@ class DevController extends Controller
                         'delivery_id' => $order->delivery_id,
                         'amount' => $order->amount,
                         'status' => $order->status,
-                        'payment_method' => $order->payment_method,
                         'created_at' => $order->created_at
                     ];
                 });
-            
+
             // Get user's deliveries
             $deliveries = Delivery::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($delivery) {
-                    return [
+                                    return [
                         'id' => $delivery->id,
                         'tracking_code' => $delivery->tracking_code,
                         'pickup_address' => $delivery->pickup_address,
@@ -168,7 +169,7 @@ class DevController extends Controller
                         'created_at' => $delivery->created_at
                     ];
                 });
-                
+
             return response()->json([
                 'user' => [
                     'id' => $user->id,
@@ -189,7 +190,7 @@ class DevController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get details for a specific delivery (public access for development)
      */
@@ -198,7 +199,7 @@ class DevController extends Controller
         try {
             // Get the delivery with user
             $delivery = Delivery::with('user')->findOrFail($deliveryId);
-            
+
             return response()->json([
                 'id' => $delivery->id,
                 'user_id' => $delivery->user_id,
@@ -211,6 +212,9 @@ class DevController extends Controller
                 'price' => $delivery->price,
                 'status' => $delivery->status,
                 'notes' => $delivery->notes,
+                'shipping_method' => $delivery->shipping_method,
+                'estimated_arrival_date' => $delivery->estimated_arrival_date,
+                'actual_arrival_date' => $delivery->actual_arrival_date,
                 'created_at' => $delivery->created_at
             ]);
         } catch (\Exception $e) {
@@ -221,7 +225,7 @@ class DevController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Get details for a specific order (public access for development)
      */
@@ -230,7 +234,7 @@ class DevController extends Controller
         try {
             // Get the order with user and delivery
             $order = Order::with(['user', 'delivery'])->findOrFail($orderId);
-            
+
             $result = [
                 'id' => $order->id,
                 'user_id' => $order->user_id,
@@ -238,10 +242,9 @@ class DevController extends Controller
                 'delivery_id' => $order->delivery_id,
                 'amount' => $order->amount,
                 'status' => $order->status,
-                'payment_method' => $order->payment_method,
                 'created_at' => $order->created_at
             ];
-            
+
             // Add delivery details if available
             if ($order->delivery) {
                 $result['delivery'] = [
@@ -256,12 +259,120 @@ class DevController extends Controller
                     'created_at' => $order->delivery->created_at
                 ];
             }
-            
+
             return response()->json($result);
         } catch (\Exception $e) {
             Log::error('Dev Error fetching order details: ' . $e->getMessage());
             return response()->json([
                 'error' => 'Failed to retrieve order details',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update delivery status (public access for development)
+     */
+    public function updateDeliveryStatus(Request $request, $deliveryId)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,in_progress,delivered,cancelled'
+            ]);
+
+            DB::beginTransaction();
+
+            $delivery = Delivery::findOrFail($deliveryId);
+            $delivery->status = $request->status;
+
+            // If status is changed to "delivered", set arrival_date to current date
+            if ($request->status === 'delivered') {
+                $delivery->actual_arrival_date = now();
+                Log::info("Dev: Set arrival date for delivery {$deliveryId} to current date");
+            }
+
+            $delivery->save();
+
+            // Update the corresponding order status based on delivery status
+            $order = $delivery->order;
+            if ($order) {
+                $orderStatus = $this->mapDeliveryStatusToOrderStatus($request->status);
+                $order->status = $orderStatus;
+                $order->save();
+
+                Log::info("Dev: Updated order {$order->id} status to {$orderStatus} based on delivery status");
+            }
+
+            DB::commit();
+
+            Log::info("Dev: Updated delivery {$deliveryId} status to {$request->status}");
+
+            return response()->json([
+                'message' => 'Delivery and order status updated successfully',
+                'delivery' => [
+                    'id' => $delivery->id,
+                    'status' => $delivery->status,
+                    'actual_arrival_date' => $delivery->actual_arrival_date,
+                    'updated_at' => $delivery->updated_at
+                ],
+                'order' => $order ? [
+                    'id' => $order->id,
+                    'status' => $order->status,
+                    'updated_at' => $order->updated_at
+                ] : null
+            ]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Dev Error updating delivery status: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to update delivery status',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Map delivery status to corresponding order status
+     */
+    private function mapDeliveryStatusToOrderStatus($deliveryStatus)
+    {
+        return match($deliveryStatus) {
+            'pending' => 'pending',
+            'in_progress' => 'processing',
+            'delivered' => 'completed',
+            'cancelled' => 'cancelled',
+            default => 'pending'
+        };
+    }
+
+    /**
+     * Update order status (public access for development)
+     */
+    public function updateOrderStatus(Request $request, $orderId)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,processing,completed,cancelled'
+            ]);
+
+            $order = Order::findOrFail($orderId);
+            $order->status = $request->status;
+            $order->save();
+
+            Log::info("Dev: Updated order {$orderId} status to {$request->status}");
+
+            return response()->json([
+                'message' => 'Order status updated successfully',
+                'order' => [
+                    'id' => $order->id,
+                    'status' => $order->status,
+                    'updated_at' => $order->updated_at
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Dev Error updating order status: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to update order status',
                 'message' => $e->getMessage()
             ], 500);
         }

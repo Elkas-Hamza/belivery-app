@@ -28,8 +28,10 @@ Route::post('/shipping/details', [\App\Http\Controllers\API\CityController::clas
 Route::get('/dev/users', [DevController::class, 'getUsers']);
 Route::get('/dev/deliveries', [DevController::class, 'getDeliveries']);
 Route::get('/dev/deliveries/{deliveryId}', [DevController::class, 'getDeliveryDetails']);
+Route::patch('/dev/deliveries/{deliveryId}/status', [DevController::class, 'updateDeliveryStatus']);
 Route::get('/dev/orders', [DevController::class, 'getOrders']);
 Route::get('/dev/orders/{orderId}', [DevController::class, 'getOrderDetails']);
+Route::patch('/dev/orders/{orderId}/status', [DevController::class, 'updateOrderStatus']);
 Route::get('/dev/stats', [DevController::class, 'getStats']);
 Route::get('/dev/users/{userId}/orders', [DevController::class, 'getUserOrders']);
 

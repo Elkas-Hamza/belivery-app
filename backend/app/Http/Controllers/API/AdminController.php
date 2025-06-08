@@ -42,7 +42,7 @@ class AdminController extends Controller
 
         return response()->json($users);
     }
-    
+
     /**
      * Update user role
      */
@@ -58,7 +58,7 @@ class AdminController extends Controller
 
         return response()->json(['message' => 'User role updated successfully']);
     }
-    
+
     /**
      * Get all orders (admin only)
      */
@@ -67,12 +67,12 @@ class AdminController extends Controller
         try {
             // First check if we have any orders
             $orderCount = Order::count();
-            
+
             if ($orderCount == 0) {
                 // If no orders exist yet, return an empty array
                 return response()->json([]);
             }
-            
+
             // Use Eloquent instead of raw query builder for better error handling
             $orders = Order::with('user')
                 ->orderBy('created_at', 'desc')
@@ -85,16 +85,15 @@ class AdminController extends Controller
                         'delivery_id' => $order->delivery_id,
                         'amount' => $order->amount,
                         'status' => $order->status,
-                        'payment_method' => $order->payment_method,
                         'created_at' => $order->created_at
                     ];
                 });
-            
+
             return response()->json($orders);
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error fetching orders: ' . $e->getMessage());
-            
+
             // Return a helpful error message
             return response()->json([
                 'error' => 'Failed to retrieve orders',
@@ -102,7 +101,7 @@ class AdminController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Update order status
      */

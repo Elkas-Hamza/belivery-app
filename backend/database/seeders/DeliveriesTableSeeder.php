@@ -57,6 +57,9 @@ class DeliveriesTableSeeder extends Seeder
         // Sample statuses
         $statuses = ['pending', 'in_progress', 'delivered', 'cancelled'];
 
+        // Sample shipping methods
+        $shippingMethods = [ 'truck', 'air', 'sea'];
+
         // Sample notes
         $notes = [
             'Please handle with care',
@@ -66,16 +69,9 @@ class DeliveriesTableSeeder extends Seeder
             ''  // Empty note option
         ];
 
-        // Clear existing deliveries (handle foreign key constraints properly)
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        // Truncate related tables first
-        DB::table('orders')->truncate();
-
-        // Now truncate deliveries
-        Delivery::truncate();
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Clear existing deliveries (SQLite compatible way)
+        DB::table('orders')->delete();
+        DB::table('deliveries')->delete();
 
         // Create 15 sample deliveries
         for ($i = 0; $i < 15; $i++) {
@@ -97,18 +93,30 @@ class DeliveriesTableSeeder extends Seeder
             // Get distance between cities
             $distance = $cityDistances[$pickupCity][$deliveryCity];
 
-            // Determine shipping method (domestic for Morocco)
-            $shippingMethod = 'domestic';
+            // Determine shipping method (random for variety)
+            $shippingMethod = $shippingMethods[array_rand($shippingMethods)];
 
             // Calculate price based on distance and weight
             $basePrice = ($distance * 0.5) + ($weight * 10);
             $price = $basePrice + rand(500, 2000) / 100; // Add some variation
 
-            // Calculate arrival date based on distance and shipping method
+            // Calculate estimated arrival date based on distance and shipping method
             $createdAt = now()->subDays(rand(0, 30))->subHours(rand(1, 24));
-            $arrivalDate = ArrivalDateCalculator::calculateArrivalDate($distance, $shippingMethod, $createdAt);
+            $estimatedArrivalDate = ArrivalDateCalculator::calculateArrivalDate($distance, $shippingMethod, $createdAt);
 
-            Delivery::create([
+            // Randomly assign status
+            $status = $statuses[array_rand($statuses)];
+
+            // If status is 'delivered', set actual arrival date (could be earlier, on time, or later than estimated)
+            $actualArrivalDate = null;
+            if ($status === 'delivered') {
+                // For delivered items, actual arrival could be -2 to +3 days from estimated
+                $daysDifference = rand(-2, 3);
+                $actualArrivalDate = $estimatedArrivalDate->copy()->addDays($daysDifference)->addHours(rand(-12, 12));
+            }
+
+            // Create the delivery
+            $delivery = Delivery::create([
                 'user_id' => $user->id,
                 'tracking_code' => 'TRK' . strtoupper(substr(md5(uniqid()), 0, 8)),
                 'pickup_address' => $pickupAddress,
@@ -116,13 +124,33 @@ class DeliveriesTableSeeder extends Seeder
                 'contact_number' => '+212 6' . rand(10, 99) . ' ' . rand(100000, 999999),
                 'weight' => $weight,
                 'price' => round($price, 2),
-                'status' => $statuses[array_rand($statuses)],
+                'status' => $status,
+                'shipping_method' => $shippingMethod,
                 'notes' => $notes[array_rand($notes)],
-                'arrival_date' => $arrivalDate ? $arrivalDate->format('Y-m-d') : null,
+                'estimated_arrival_date' => $estimatedArrivalDate,
+                'actual_arrival_date' => $actualArrivalDate,
                 'created_at' => $createdAt,
+            ]);
+
+            // Create a corresponding order for each delivery
+            $orderStatus = match($status) {
+                'pending' => 'pending',
+                'in_progress' => 'processing',
+                'delivered' => 'completed',
+                'cancelled' => 'cancelled',
+                default => 'pending'
+            };
+
+            \App\Models\Order::create([
+                'user_id' => $user->id,
+                'delivery_id' => $delivery->id,
+                'amount' => round($price, 2),
+                'status' => $orderStatus,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
             ]);
         }
 
-        $this->command->info('Deliveries seeded successfully!');
+        $this->command->info('Deliveries and orders seeded successfully!');
     }
 }

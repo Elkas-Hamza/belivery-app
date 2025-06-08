@@ -94,7 +94,6 @@ class ArrivalDateService {
 
     return `${minDays}-${maxDays} days`;
   }
-
   /**
    * Determine shipping method based on countries
    * @param {string} pickupCountry
@@ -108,12 +107,12 @@ class ArrivalDateService {
     preferredMethod = "air"
   ) {
     if (!pickupCountry || !deliveryCountry) {
-      return "domestic";
+      return "truck";
     }
 
-    // Same country = domestic
+    // Same country = truck for local deliveries
     if (pickupCountry.toLowerCase() === deliveryCountry.toLowerCase()) {
-      return "domestic";
+      return "truck";
     }
 
     // Different countries = international, use preferred method

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import api from '../services/api';
-import './DeliveryTracking.css';
+import React, { useState, useEffect } from "react";
+import api from "../services/api";
+import "./DeliveryTracking.css";
 
 const DeliveryTracking = ({ deliveryId }) => {
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (deliveryId) {
       fetchDeliveryDetails();
@@ -18,22 +18,22 @@ const DeliveryTracking = ({ deliveryId }) => {
       const response = await api.get(`/deliveries/${deliveryId}`);
       setDelivery(response.data);
     } catch (error) {
-      console.error('Error fetching delivery details:', error);
-      setError('Could not load delivery information');
+      console.error("Error fetching delivery details:", error);
+      setError("Could not load delivery information");
     } finally {
       setLoading(false);
     }
   };
 
   const getStatusStep = (status) => {
-    switch(status) {
-      case 'pending':
+    switch (status) {
+      case "pending":
         return 1;
-      case 'in_progress':
+      case "in_progress":
         return 2;
-      case 'delivered':
+      case "delivered":
         return 3;
-      case 'cancelled':
+      case "cancelled":
         return 0;
       default:
         return 0;
@@ -41,14 +41,14 @@ const DeliveryTracking = ({ deliveryId }) => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -77,7 +77,7 @@ const DeliveryTracking = ({ deliveryId }) => {
         <div className="detail-row">
           <div className="detail-label">Status:</div>
           <div className={`detail-value status-badge ${delivery.status}`}>
-            {delivery.status.replace('_', ' ')}
+            {delivery.status.replace("_", " ")}
           </div>
         </div>
 
@@ -122,27 +122,63 @@ const DeliveryTracking = ({ deliveryId }) => {
             <div className="detail-value">{delivery.notes}</div>
           </div>
         )}
+
+        <div className="detail-row">
+          <div className="detail-label">Estimated Arrival:</div>
+          <div className="detail-value">
+            {delivery.estimated_arrival_date
+              ? formatDate(delivery.estimated_arrival_date)
+              : "Not set"}
+          </div>
+        </div>
+
+        <div className="detail-row">
+          <div className="detail-label">Actual Arrival:</div>
+          <div className="detail-value">
+            {delivery.actual_arrival_date ? (
+              <span className="actual-arrival-date">
+                {formatDate(delivery.actual_arrival_date)}
+              </span>
+            ) : delivery.status === "delivered" ? (
+              <span className="missing-actual-date">Not recorded</span>
+            ) : (
+              <span className="pending-arrival">Pending delivery</span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="tracking-progress">
         <div className="progress-steps">
-          <div className={`progress-step ${statusStep >= 1 ? 'active' : ''} ${delivery.status === 'cancelled' ? 'cancelled' : ''}`}>
+          <div
+            className={`progress-step ${statusStep >= 1 ? "active" : ""} ${
+              delivery.status === "cancelled" ? "cancelled" : ""
+            }`}
+          >
             <div className="step-icon">1</div>
             <div className="step-label">Order Placed</div>
           </div>
           <div className="progress-line"></div>
-          <div className={`progress-step ${statusStep >= 2 ? 'active' : ''} ${delivery.status === 'cancelled' ? 'cancelled' : ''}`}>
+          <div
+            className={`progress-step ${statusStep >= 2 ? "active" : ""} ${
+              delivery.status === "cancelled" ? "cancelled" : ""
+            }`}
+          >
             <div className="step-icon">2</div>
             <div className="step-label">In Transit</div>
           </div>
           <div className="progress-line"></div>
-          <div className={`progress-step ${statusStep >= 3 ? 'active' : ''} ${delivery.status === 'cancelled' ? 'cancelled' : ''}`}>
+          <div
+            className={`progress-step ${statusStep >= 3 ? "active" : ""} ${
+              delivery.status === "cancelled" ? "cancelled" : ""
+            }`}
+          >
             <div className="step-icon">3</div>
             <div className="step-label">Delivered</div>
           </div>
         </div>
-        
-        {delivery.status === 'cancelled' && (
+
+        {delivery.status === "cancelled" && (
           <div className="cancelled-notice">
             This delivery has been cancelled.
           </div>
@@ -152,11 +188,11 @@ const DeliveryTracking = ({ deliveryId }) => {
       <div className="estimated-delivery">
         <div className="estimate-label">Estimated Delivery Time:</div>
         <div className="estimate-value">
-          {delivery.status === 'delivered' 
-            ? 'Delivered' 
-            : delivery.status === 'cancelled'
-              ? 'Cancelled'
-              : '30-45 minutes'}
+          {delivery.status === "delivered"
+            ? "Delivered"
+            : delivery.status === "cancelled"
+            ? "Cancelled"
+            : "30-45 minutes"}
         </div>
       </div>
     </div>

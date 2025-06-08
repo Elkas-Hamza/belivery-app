@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FaTimes,
   FaMapMarkerAlt,
@@ -24,7 +24,7 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
     price: "",
     notes: "",
     shipping_method: "air", // Default to air freight for international
-    arrival_date: "",
+    estimated_arrival_date: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -46,72 +46,97 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
   // Check if international shipping is needed
   const isInternationalShipping =
     pickupCountry && deliveryCountry && pickupCountry !== deliveryCountry;
+  // Create calculation data object to avoid direct formData dependencies
+  const calculationData = {
+    pickup_address: formData.pickup_address,
+    delivery_address: formData.delivery_address,
+    weight: formData.weight,
+    shipping_method: formData.shipping_method,
+  };
 
-  // Calculate price automatically when relevant data changes
-  useEffect(() => {
-    const calculatePrice = async () => {
-      if (
-        !formData.pickup_address ||
-        !formData.delivery_address ||
-        !formData.weight
-      ) {
-        setPriceData(null);
-        setFormData((prev) => ({ ...prev, price: "" }));
-        return;
-      }
+  // Memoized price calculation function
+  const calculatePrice = useCallback(async () => {
+    const { pickup_address, delivery_address, weight, shipping_method } =
+      calculationData;
 
-      if (parseFloat(formData.weight) <= 0) return;
+    if (
+      !pickup_address ||
+      !delivery_address ||
+      !weight ||
+      parseFloat(weight) <= 0
+    ) {
+      setPriceData(null);
+      setFormData((prev) => ({ ...prev, price: "" }));
+      return;
+    }
 
-      setPriceLoading(true);
-      setPriceError(null);
+    setPriceLoading(true);
+    setPriceError(null);
 
-      try {
-        const shippingMethod = priceCalculationService.determineShippingMethod(
-          pickupCountry,
-          deliveryCountry,
-          formData.shipping_method
-        );
-        const result = await priceCalculationService.calculateFromAddresses(
-          formData.pickup_address,
-          formData.delivery_address,
-          formData.weight,
-          shippingMethod
-        );
+    try {
+      const shippingMethod = priceCalculationService.determineShippingMethod(
+        pickupCountry,
+        deliveryCountry,
+        shipping_method
+      );
+      const result = await priceCalculationService.calculateFromAddresses(
+        pickup_address,
+        delivery_address,
+        weight,
+        shippingMethod
+      );
 
-        // Calculate arrival date based on distance and shipping method
-        const arrivalDate = ArrivalDateService.calculateArrivalDate(
-          result.distance,
-          shippingMethod
-        );
+      // Calculate arrival date based on distance and shipping method
+      const arrivalDate = ArrivalDateService.calculateArrivalDate(
+        result.distance,
+        shippingMethod
+      );
 
-        setPriceData(result);
-        setFormData((prev) => ({
-          ...prev,
-          price: result.price.toString(),
-          arrival_date: arrivalDate || "",
-        }));
-      } catch (error) {
-        console.error("Price calculation failed:", error);
-        setPriceError(
-          "Unable to calculate price automatically. Please enter manually."
-        );
-        setPriceData(null);
-      } finally {
-        setPriceLoading(false);
-      }
-    };
-
-    // Debounce the calculation to avoid too many API calls
-    const timeoutId = setTimeout(calculatePrice, 500);
-    return () => clearTimeout(timeoutId);
+      setPriceData(result);
+      setFormData((prev) => ({
+        ...prev,
+        price: result.price.toString(),
+        estimated_arrival_date: arrivalDate || "",
+      }));
+    } catch (error) {
+      console.error("Price calculation failed:", error);
+      setPriceError(
+        "Unable to calculate price automatically. Please enter manually."
+      );
+      setPriceData(null);
+    } finally {
+      setPriceLoading(false);
+    }
   }, [
-    formData.pickup_address,
-    formData.delivery_address,
-    formData.weight,
-    formData.shipping_method,
+    calculationData.pickup_address,
+    calculationData.delivery_address,
+    calculationData.weight,
+    calculationData.shipping_method,
     pickupCountry,
     deliveryCountry,
   ]);
+  // Calculate price automatically when relevant data changes
+  useEffect(() => {
+    // Debounce the calculation to avoid too many API calls
+    const timeoutId = setTimeout(calculatePrice, 500);
+    return () => clearTimeout(timeoutId);
+  }, [calculatePrice]);
+
+  // Automatically set shipping method based on countries
+  useEffect(() => {
+    if (pickupCountry && deliveryCountry) {
+      const determinedMethod = priceCalculationService.determineShippingMethod(
+        pickupCountry,
+        deliveryCountry,
+        formData.shipping_method
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        shipping_method: determinedMethod,
+      }));
+    }
+  }, [pickupCountry, deliveryCountry]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -167,13 +192,13 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
 
     setLoading(true);
     setError(null);
-
     try {
       const response = await api.post("/deliveries", {
         ...formData,
         weight: parseFloat(formData.weight),
         price: parseFloat(formData.price),
         arrival_date: formData.arrival_date || null,
+        shipping_method: formData.shipping_method || "domestic",
       });
 
       if (onDeliveryCreated) {
@@ -314,18 +339,20 @@ const DeliveryFormModal = ({ onClose, onDeliveryCreated }) => {
           <div className="form-row">
             {" "}
             <div className="form-group">
-              <label htmlFor="arrival_date">Date d'Arrivée Prévue</label>
+              <label htmlFor="estimated_arrival_date">
+                Date d'Arrivée Prévue
+              </label>
               <input
                 type="date"
-                id="arrival_date"
-                name="arrival_date"
-                value={formData.arrival_date}
+                id="estimated_arrival_date"
+                name="estimated_arrival_date"
+                value={formData.estimated_arrival_date}
                 onChange={handleInputChange}
                 min={new Date().toISOString().split("T")[0]}
-                className={formData.arrival_date ? "calculated" : ""}
+                className={formData.estimated_arrival_date ? "calculated" : ""}
               />
               <small className="help-text">
-                {formData.arrival_date
+                {formData.estimated_arrival_date
                   ? `Calculé automatiquement basé sur la distance et méthode d'expédition. ${
                       priceData?.distance
                         ? `Distance: ${priceData.distance.toFixed(

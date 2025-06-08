@@ -60,6 +60,15 @@ class PriceCalculator
 
     public function calculatePriceFromAddresses(string $pickupAddress, string $deliveryAddress, float $weight, string $shippingMethod = 'domestic'): array
     {
+        // Extract location information to determine optimal shipping method
+        $fromInfo = $this->extractLocationInfo($pickupAddress);
+        $toInfo = $this->extractLocationInfo($deliveryAddress);
+
+        // Auto-determine shipping method for same-country deliveries
+        if ($fromInfo['country'] === $toInfo['country'] && $shippingMethod === 'domestic') {
+            $shippingMethod = 'truck'; // Use truck for local deliveries
+        }
+
         $distance = $this->calculateDistance($pickupAddress, $deliveryAddress, $shippingMethod);
         $price = $this->calculatePrice($weight, $distance, $shippingMethod);
 

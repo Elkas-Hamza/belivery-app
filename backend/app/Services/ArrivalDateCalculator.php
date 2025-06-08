@@ -104,12 +104,12 @@ class ArrivalDateCalculator
     public static function determineShippingMethod($pickupCountry, $deliveryCountry, $preferredMethod = 'air')
     {
         if (!$pickupCountry || !$deliveryCountry) {
-            return 'domestic';
+            return 'truck';
         }
 
-        // Same country = domestic
+        // Same country = truck for local deliveries
         if (strtolower($pickupCountry) === strtolower($deliveryCountry)) {
-            return 'domestic';
+            return 'truck';
         }
 
         // Different countries = international, use preferred method

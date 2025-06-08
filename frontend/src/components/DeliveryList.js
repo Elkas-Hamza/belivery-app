@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { FaAlignCenter, FaEdit, FaTrashAlt, FaPlus } from "react-icons/fa";
+import { FaAlignCenter, FaEdit, FaTrashAlt } from "react-icons/fa";
 import api from "../services/api";
-import DeliveryFormModal from "./DeliveryFormModal";
 import ModifyDeliveryModal from "./ModifyDeliveryModal";
 import "./DeliveryList.css";
 
@@ -9,7 +8,6 @@ const DeliveryList = ({ onViewDetails }) => {
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
 
@@ -38,15 +36,17 @@ const DeliveryList = ({ onViewDetails }) => {
       setLoading(false);
     }
   };
-
   const handleStatusChange = async (deliveryId, newStatus) => {
     try {
-      await api.patch(`/deliveries/${deliveryId}/status`, {
+      // Use development endpoint for status updates
+      await api.patch(`/dev/deliveries/${deliveryId}/status`, {
         status: newStatus,
       });
       fetchDeliveries();
+      console.log(`Delivery ${deliveryId} status updated to ${newStatus}`);
     } catch (error) {
       console.error("Error updating status:", error);
+      alert("Failed to update delivery status. Please try again.");
     }
   };
 
@@ -84,25 +84,14 @@ const DeliveryList = ({ onViewDetails }) => {
       }
     }
   };
-
   const handleModifyDelivery = (delivery) => {
     setSelectedDelivery(delivery);
     setShowModifyModal(true);
   };
 
-  const handleAddNewDelivery = () => {
-    setShowAddModal(true);
-  };
-
   const handleCloseModal = () => {
-    setShowAddModal(false);
     setShowModifyModal(false);
     setSelectedDelivery(null);
-  };
-
-  const handleDeliveryCreated = (newDelivery) => {
-    // Refresh the deliveries list
-    fetchDeliveries();
   };
 
   const handleDeliveryUpdated = (updatedDelivery) => {
@@ -136,7 +125,6 @@ const DeliveryList = ({ onViewDetails }) => {
       return dateString;
     }
   };
-
   return (
     <div className="delivery-list-container">
       <div className="delivery-list-header">
@@ -147,14 +135,6 @@ const DeliveryList = ({ onViewDetails }) => {
             {deliveries.length === 1 ? "delivery" : "deliveries"} found
           </div>
         </div>
-        <button
-          className="add-delivery-btn"
-          onClick={handleAddNewDelivery}
-          title="Add new delivery"
-        >
-          <FaPlus />
-          Add Delivery
-        </button>
       </div>
 
       {deliveries.length === 0 ? (
@@ -164,7 +144,9 @@ const DeliveryList = ({ onViewDetails }) => {
       ) : (
         <div className="table-responsive">
           <table className="deliveries-table">
+            {" "}
             <thead>
+              {" "}
               <tr>
                 <th>ID</th>
                 <th>Status</th>
@@ -173,8 +155,10 @@ const DeliveryList = ({ onViewDetails }) => {
                 <th>Contact</th>
                 <th>Weight (kg)</th>
                 <th>Price</th>
+                <th>Shipping Method</th>
                 <th>Created</th>
-                <th>Date d'Arrivée</th>
+                <th>Est. Arrival</th>
+                <th>Actual Arrival</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -206,20 +190,43 @@ const DeliveryList = ({ onViewDetails }) => {
                   </td>
                   <td className="contact" data-label="Contact">
                     {delivery.contact_number}
-                  </td>
+                  </td>{" "}
                   <td className="weight" data-label="Weight">
                     {delivery.weight} kg
-                  </td>
+                  </td>{" "}
                   <td className="price" data-label="Price">
-                    {delivery.price} DH
+                    {typeof delivery.price === "number"
+                      ? delivery.price.toFixed(2)
+                      : parseFloat(delivery.price || 0).toFixed(2)}{" "}
+                    DH
+                  </td>{" "}
+                  <td className="shipping-method" data-label="Shipping Method">
+                    <span
+                      className={`shipping-method-badge ${
+                        delivery.shipping_method || "domestic"
+                      }`}
+                    >
+                      {(delivery.shipping_method || "domestic").toUpperCase()}
+                    </span>
                   </td>
                   <td className="date" data-label="Created">
                     {formatDate(delivery.created_at)}
                   </td>
-                  <td className="date" data-label="Date d'Arrivée">
-                    {delivery.arrival_date
-                      ? formatDate(delivery.arrival_date)
+                  <td className="date" data-label="Est. Arrival">
+                    {delivery.estimated_arrival_date
+                      ? formatDate(delivery.estimated_arrival_date)
                       : "Non définie"}
+                  </td>
+                  <td className="date" data-label="Actual Arrival">
+                    {delivery.actual_arrival_date ? (
+                      <span className="actual-arrival-date">
+                        {formatDate(delivery.actual_arrival_date)}
+                      </span>
+                    ) : delivery.status === "delivered" ? (
+                      <span className="missing-actual-date">Not recorded</span>
+                    ) : (
+                      <span className="pending-arrival">-</span>
+                    )}
                   </td>
                   <td
                     className="actions-cell"
@@ -276,15 +283,8 @@ const DeliveryList = ({ onViewDetails }) => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table>{" "}
         </div>
-      )}
-
-      {showAddModal && (
-        <DeliveryFormModal
-          onClose={handleCloseModal}
-          onDeliveryCreated={handleDeliveryCreated}
-        />
       )}
 
       {showModifyModal && selectedDelivery && (

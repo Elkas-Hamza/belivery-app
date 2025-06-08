@@ -24,6 +24,9 @@ class Delivery extends Model
         'price',
         'status',
         'notes',
+        'estimated_arrival_date',
+        'actual_arrival_date',
+        'shipping_method',
     ];
 
     /**

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FaTimes,
   FaMapMarkerAlt,
@@ -23,8 +23,8 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
     weight: delivery?.weight || "",
     price: delivery?.price || "",
     notes: delivery?.notes || "",
-    arrival_date: delivery?.arrival_date
-      ? delivery.arrival_date.split("T")[0]
+    estimated_arrival_date: delivery?.estimated_arrival_date
+      ? delivery.estimated_arrival_date.split("T")[0]
       : "",
   });
 
@@ -44,7 +44,6 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
     const parts = address.split(",").map((part) => part.trim());
     return parts[parts.length - 1] || "";
   };
-
   // Initialize countries and shipping method based on existing addresses
   useEffect(() => {
     if (delivery) {
@@ -58,25 +57,81 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
       setPickupCountry(pickupCountryFromAddress);
       setDeliveryCountry(deliveryCountryFromAddress);
 
-      // Determine shipping method
-      if (
-        pickupCountryFromAddress &&
-        deliveryCountryFromAddress &&
-        pickupCountryFromAddress !== deliveryCountryFromAddress
-      ) {
-        setShippingMethod("air"); // Default to air for international
-      } else {
-        setShippingMethod("domestic");
-      }
+      // Determine shipping method automatically
+      const determinedMethod = priceCalculationService.determineShippingMethod(
+        pickupCountryFromAddress,
+        deliveryCountryFromAddress,
+        delivery.shipping_method || "air"
+      );
+      setShippingMethod(determinedMethod);
     }
-  }, [delivery]);
-  // Calculate price when form data changes
+  }, [delivery]); // Create refs to track the current form values for price calculation
+  const calculationData = {
+    pickup_address: formData.pickup_address,
+    delivery_address: formData.delivery_address,
+    weight: formData.weight,
+    shipping_method: shippingMethod,
+  };
+
+  // Memoized calculation function that doesn't depend on formData state
+  const calculatePrice = useCallback(async () => {
+    const { pickup_address, delivery_address, weight, shipping_method } =
+      calculationData;
+
+    if (
+      !pickup_address ||
+      !delivery_address ||
+      !weight ||
+      parseFloat(weight) <= 0
+    ) {
+      setPriceData(null);
+      setFormData((prev) => ({ ...prev, price: "" }));
+      return;
+    }
+
+    try {
+      setPriceLoading(true);
+      setPriceError(null);
+
+      const result = await priceCalculationService.calculateFromAddresses(
+        pickup_address,
+        delivery_address,
+        weight,
+        shipping_method
+      );
+
+      // Calculate arrival date based on distance and shipping method
+      const arrivalDate = ArrivalDateService.calculateArrivalDate(
+        result.distance,
+        shipping_method
+      );
+
+      setPriceData(result);
+      setFormData((prev) => ({
+        ...prev,
+        price: result.price, // Use result.price instead of result.total
+        estimated_arrival_date: arrivalDate || prev.estimated_arrival_date, // Keep existing if calculation fails
+      }));
+    } catch (error) {
+      console.error("Error calculating price:", error);
+      setPriceError("Failed to calculate price");
+    } finally {
+      setPriceLoading(false);
+    }
+  }, [
+    calculationData.pickup_address,
+    calculationData.delivery_address,
+    calculationData.weight,
+    calculationData.shipping_method,
+  ]);
+
+  // Calculate price when form data changes (debounced to prevent excessive API calls)
   useEffect(() => {
     if (
-      formData.pickup_address &&
-      formData.delivery_address &&
-      formData.weight &&
-      parseFloat(formData.weight) > 0
+      calculationData.pickup_address &&
+      calculationData.delivery_address &&
+      calculationData.weight &&
+      parseFloat(calculationData.weight) > 0
     ) {
       // Clear existing timeout
       if (calculationTimeout) {
@@ -86,7 +141,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
       // Set new timeout for debounced calculation
       const timeout = setTimeout(() => {
         calculatePrice();
-      }, 800); // Increase debounce time to 800ms
+      }, 800); // Debounce time to prevent excessive API calls
 
       setCalculationTimeout(timeout);
 
@@ -104,41 +159,27 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
       }));
     }
   }, [
-    formData.pickup_address,
-    formData.delivery_address,
-    formData.weight,
-    shippingMethod,
+    calculationData.pickup_address,
+    calculationData.delivery_address,
+    calculationData.weight,
+    calculationData.shipping_method,
+    calculatePrice,
   ]);
-  const calculatePrice = async () => {
-    try {
-      setPriceLoading(true);
-      setPriceError(null);
-      const result = await priceCalculationService.calculateFromAddresses(
-        formData.pickup_address,
-        formData.delivery_address,
-        formData.weight,
+
+  // Automatically update shipping method when countries change
+  useEffect(() => {
+    if (pickupCountry && deliveryCountry) {
+      const determinedMethod = priceCalculationService.determineShippingMethod(
+        pickupCountry,
+        deliveryCountry,
         shippingMethod
       );
 
-      // Calculate arrival date based on distance and shipping method
-      const arrivalDate = ArrivalDateService.calculateArrivalDate(
-        result.distance,
-        shippingMethod
-      );
-
-      setPriceData(result);
-      setFormData((prev) => ({
-        ...prev,
-        price: result.price,  // Use result.price instead of result.total
-        arrival_date: arrivalDate || prev.arrival_date, // Keep existing if calculation fails
-      }));
-    } catch (error) {
-      console.error("Error calculating price:", error);
-      setPriceError("Failed to calculate price");
-    } finally {
-      setPriceLoading(false);
+      if (determinedMethod !== shippingMethod) {
+        setShippingMethod(determinedMethod);
+      }
     }
-  };
+  }, [pickupCountry, deliveryCountry]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -226,6 +267,8 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
         weight: parseFloat(formData.weight),
         price: parseFloat(formData.price),
         notes: formData.notes || null,
+        shipping_method: shippingMethod || "domestic",
+        arrival_date: formData.arrival_date || null,
       });
 
       onDeliveryUpdated(response.data);
@@ -256,7 +299,8 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
           <button className="close-btn" onClick={onClose}>
             <FaTimes />
           </button>
-        </div>        <form onSubmit={handleSubmit} className="delivery-form">
+        </div>{" "}
+        <form onSubmit={handleSubmit} className="delivery-form">
           {/* Address Selection Row */}
           <div className="address-section">
             <h3>Addresses</h3>
@@ -291,12 +335,13 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
                   error={errors.delivery_address}
                 />
                 {errors.delivery_address && (
-                  <span className="error-message">{errors.delivery_address}</span>
+                  <span className="error-message">
+                    {errors.delivery_address}
+                  </span>
                 )}
               </div>
             </div>
           </div>
-
           {/* Shipping Method for International Deliveries */}
           {showInternationalShipping && (
             <div className="shipping-section">
@@ -311,7 +356,6 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
               </div>
             </div>
           )}
-
           {/* Package Details Section */}
           <div className="package-section">
             <h3>Package Details</h3>
@@ -353,7 +397,6 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
               </div>
             </div>
           </div>
-
           {/* Price Calculation Section */}
           <div className="price-section">
             <h3>Price Calculation</h3>
@@ -369,17 +412,20 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
                 placeholder="Price will be calculated automatically"
                 min="0"
                 step="0.01"
-                className={`price-input-readonly ${errors.price ? "error" : ""}`}
+                className={`price-input-readonly ${
+                  errors.price ? "error" : ""
+                }`}
                 readOnly
               />
               {errors.price && (
                 <span className="error-message">{errors.price}</span>
               )}
               <small className="price-help-text">
-                Price is calculated automatically based on weight, distance, and shipping method
+                Price is calculated automatically based on weight, distance, and
+                shipping method
               </small>
             </div>
-            
+
             {/* Price Display Component */}
             {(priceData || priceLoading || priceError) && (
               <PriceDisplay
@@ -392,22 +438,21 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
               />
             )}
           </div>
-
           {/* Additional Details Section */}
           <div className="additional-section">
-            <h3>Additional Details</h3>
+            <h3>Additional Details</h3>{" "}
             <div className="form-group">
               <label>Date d'Arrivée Prévue</label>
               <input
                 type="date"
-                name="arrival_date"
-                value={formData.arrival_date}
+                name="estimated_arrival_date"
+                value={formData.estimated_arrival_date}
                 onChange={handleInputChange}
                 min={new Date().toISOString().split("T")[0]}
-                className={formData.arrival_date ? "calculated" : ""}
+                className={formData.estimated_arrival_date ? "calculated" : ""}
               />
               <small className="help-text">
-                {formData.arrival_date
+                {formData.estimated_arrival_date
                   ? `Recalculé automatiquement basé sur la distance et méthode d'expédition. ${
                       priceData?.distance
                         ? `Distance: ${priceData.distance.toFixed(
@@ -421,7 +466,6 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
                   : "Sera recalculé automatiquement lors de la modification des adresses"}
               </small>
             </div>
-            
             <div className="form-group">
               <label>
                 <FaTruck /> Additional Notes
@@ -434,18 +478,13 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
                 rows="3"
               />
             </div>
-          </div>
-
+          </div>{" "}
           {/* Form Actions */}
           <div className="form-actions">
             <button type="button" className="cancel-btn" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "Updating..." : "Update Delivery"}
-            </button>
-          </div>
-        </form>
               {loading ? "Updating..." : "Update Delivery"}
             </button>
           </div>

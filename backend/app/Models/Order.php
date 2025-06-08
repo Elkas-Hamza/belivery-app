@@ -19,9 +19,8 @@ class Order extends Model
         'delivery_id',
         'amount',
         'status',
-        'payment_method',
     ];
-    
+
     /**
      * The relationships that should always be loaded.
      *

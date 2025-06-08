@@ -26,7 +26,6 @@ class OrdersTableSeeder extends Seeder
 
         // Create sample orders
         $statuses = ['pending', 'processing', 'completed', 'cancelled'];
-        $paymentMethods = ['card', 'cash', 'bank_transfer'];
 
         // Clear existing orders
         Order::truncate();
@@ -35,13 +34,12 @@ class OrdersTableSeeder extends Seeder
         for ($i = 0; $i < 20; $i++) {
             $user = $users->random();
             $delivery = $deliveries->random();
-            
+
             Order::create([
                 'user_id' => $user->id,
                 'delivery_id' => $delivery->id,
                 'amount' => $delivery->price ?: rand(2000, 15000) / 100, // Use delivery price or random amount
                 'status' => $statuses[array_rand($statuses)],
-                'payment_method' => $paymentMethods[array_rand($paymentMethods)],
                 'created_at' => now()->subDays(rand(0, 30))->subHours(rand(1, 24)),
             ]);
         }

@@ -67,7 +67,6 @@ export const priceCalculationService = {
     }
     return address;
   },
-
   /**
    * Determine shipping method based on countries
    */
@@ -76,8 +75,8 @@ export const priceCalculationService = {
     deliveryCountry,
     selectedMethod = "air"
   ) {
-    if (!pickupCountry || !deliveryCountry) return "domestic";
-    if (pickupCountry === deliveryCountry) return "domestic";
+    if (!pickupCountry || !deliveryCountry) return "truck";
+    if (pickupCountry === deliveryCountry) return "truck"; // Use truck for local deliveries
     return selectedMethod; // Use selected method for international
   },
   /**
@@ -102,7 +101,8 @@ export const priceCalculationService = {
    * Get shipping method details
    */
   getShippingMethodDetails() {
-    return {      air: {
+    return {
+      air: {
         name: "Air Freight",
         multiplier: 2.5,
         description: "Fast delivery by air (3-7 days)",

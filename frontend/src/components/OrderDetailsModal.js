@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { FaTimes, FaShoppingCart, FaTruck, FaUser, FaCalendarAlt, FaMoneyBillWave, FaCreditCard } from 'react-icons/fa';
-import api from '../services/api';
-import PrintableInvoice from './PrintableInvoice';
-import './AdminDashboard.css';
-import './PrintStyles.css';
+import React, { useState, useEffect } from "react";
+import {
+  FaTimes,
+  FaShoppingCart,
+  FaTruck,
+  FaUser,
+  FaCalendarAlt,
+  FaMoneyBillWave,
+  FaCreditCard,
+} from "react-icons/fa";
+import api from "../services/api";
+import PrintableInvoice from "./PrintableInvoice";
+import "./AdminDashboard.css";
+import "./PrintStyles.css";
 
 const OrderDetailsModal = ({ orderId, onClose }) => {
   const [order, setOrder] = useState(null);
@@ -22,35 +30,35 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
       setOrder(response.data);
       setError(null);
     } catch (error) {
-      console.error('Error fetching order details:', error);
-      setError('Failed to load order details. Please try again later.');
+      console.error("Error fetching order details:", error);
+      setError("Failed to load order details. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
-        return '#ff9800';
-      case 'processing':
-        return '#2196f3';
-      case 'completed':
-        return '#4caf50';
-      case 'cancelled':
-        return '#f44336';
+      case "pending":
+        return "#ff9800";
+      case "processing":
+        return "#2196f3";
+      case "completed":
+        return "#4caf50";
+      case "cancelled":
+        return "#f44336";
       default:
-        return '#666';
+        return "#666";
     }
   };
 
@@ -84,7 +92,9 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
           </div>
           <div className="modal-content error">
             <p className="error-message">{error}</p>
-            <button onClick={fetchOrderDetails} className="retry-btn">Retry</button>
+            <button onClick={fetchOrderDetails} className="retry-btn">
+              Retry
+            </button>
           </div>
         </div>
       </div>
@@ -95,23 +105,26 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container order-details" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-container order-details"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>Order #{order.id}</h2>
           <button className="close-button" onClick={onClose}>
             <FaTimes />
           </button>
         </div>
-        
+
         <div className="modal-content">
           <div className="order-status-header">
-            <div 
-              className="order-status-indicator" 
+            <div
+              className="order-status-indicator"
               style={{ backgroundColor: getStatusColor(order.status) }}
             >
-              <span>{order.status.replace('_', ' ')}</span>
+              <span>{order.status.replace("_", " ")}</span>
             </div>
-            
+
             <div className="order-meta">
               <div className="meta-item">
                 <FaCalendarAlt />
@@ -127,7 +140,7 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
               </div>
             </div>
           </div>
-          
+
           <div className="order-details-grid">
             <div className="detail-card">
               <div className="detail-icon">
@@ -138,7 +151,7 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
                 <p>#{order.id}</p>
               </div>
             </div>
-            
+
             <div className="detail-card">
               <div className="detail-icon">
                 <FaTruck />
@@ -148,39 +161,36 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
                 <p>#{order.delivery_id}</p>
               </div>
             </div>
-            
+
             <div className="detail-card">
               <div className="detail-icon">
                 <FaMoneyBillWave />
               </div>
               <div className="detail-content">
                 <h4>Total Amount</h4>
-                <p>${order.amount.toFixed(2)}</p>
-              </div>
-            </div>
-            
-            <div className="detail-card">
-              <div className="detail-icon">
-                <FaCreditCard />
-              </div>
-              <div className="detail-content">
-                <h4>Payment Method</h4>
-                <p>{order.payment_method}</p>
+                <p>
+                  $
+                  {typeof order.amount === "number"
+                    ? order.amount.toFixed(2)
+                    : parseFloat(order.amount || 0).toFixed(2)}
+                </p>
               </div>
             </div>
           </div>
-          
+
           {order.delivery && (
             <div className="order-delivery-details">
               <h3>Delivery Information</h3>
               <div className="delivery-card">
                 <div className="delivery-header">
-                  <div className="delivery-number">Delivery #{order.delivery.id}</div>
+                  <div className="delivery-number">
+                    Delivery #{order.delivery.id}
+                  </div>
                   <div className={`status-badge ${order.delivery.status}`}>
-                    {order.delivery.status.replace('_', ' ')}
+                    {order.delivery.status.replace("_", " ")}
                   </div>
                 </div>
-                
+
                 <div className="delivery-addresses">
                   <div className="address">
                     <h4>From</h4>
@@ -192,7 +202,7 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
                     <p>{order.delivery.delivery_address}</p>
                   </div>
                 </div>
-                
+
                 <div className="delivery-details">
                   <div className="detail">
                     <span>Weight:</span>
@@ -200,7 +210,28 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
                   </div>
                   <div className="detail">
                     <span>Price:</span>
-                    <span>${order.delivery.price.toFixed(2)}</span>
+                    <span>
+                      $
+                      {typeof order.delivery.price === "number"
+                        ? order.delivery.price.toFixed(2)
+                        : parseFloat(order.delivery.price || 0).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="detail">
+                    <span>Shipping Method:</span>
+                    <span
+                      className={`shipping-method-badge ${
+                        order.delivery.shipping_method || "domestic"
+                      }`}
+                    >
+                      {order.delivery.shipping_method === "air"
+                        ? "Air Freight"
+                        : order.delivery.shipping_method === "sea"
+                        ? "Sea Freight"
+                        : order.delivery.shipping_method === "truck"
+                        ? "Truck Freight"
+                        : "Domestic Delivery"}
+                    </span>
                   </div>
                   {order.delivery.tracking_code && (
                     <div className="detail">
@@ -212,15 +243,18 @@ const OrderDetailsModal = ({ orderId, onClose }) => {
               </div>
             </div>
           )}
-          
+
           <div className="modal-actions">
-            <button className="primary-btn" onClick={() => setShowPrintInvoice(true)}>
-              <FaMoneyBillWave style={{ marginRight: '8px' }} /> Print Invoice
+            <button
+              className="primary-btn"
+              onClick={() => setShowPrintInvoice(true)}
+            >
+              <FaMoneyBillWave style={{ marginRight: "8px" }} /> Print Invoice
             </button>
           </div>
-          
+
           {showPrintInvoice && (
-            <PrintableInvoice 
+            <PrintableInvoice
               order={order}
               onClose={() => setShowPrintInvoice(false)}
             />
