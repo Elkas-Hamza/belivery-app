@@ -155,7 +155,7 @@ const UserProfileModal = ({ userId, onClose }) => {
                         <th>Order ID</th>
                         <th>Amount</th>
                         <th>Status</th>
-                        <th>Payment</th>
+                       
                         <th>Date</th>
                       </tr>
                     </thead>
@@ -174,7 +174,6 @@ const UserProfileModal = ({ userId, onClose }) => {
                               {order.status.replace("_", " ")}
                             </span>
                           </td>
-                          <td>{order.payment_method}</td>
                           <td>{formatDate(order.created_at)}</td>
                         </tr>
                       ))}

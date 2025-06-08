@@ -54,7 +54,7 @@ echo "International Truck (5kg): " . $truckResult['price'] . " MAD\n";
 
 echo "\n=== RATE CHANGES SUMMARY ===\n";
 echo "=== DOMESTIC RATES ===\n";
-echo "Base Price: 5.00 MAD\n";
+echo "Base Price: 0.00 MAD (removed domestic delivery fee)\n";
 echo "Weight Rate: 2.00 MAD/kg\n";
 echo "Distance Rate: 0.50 MAD/km\n";
 echo "\n=== INTERNATIONAL RATES ===\n";

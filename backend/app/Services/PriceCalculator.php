@@ -9,7 +9,7 @@ use App\Models\CountryDistance;
 
 class PriceCalculator
 {
-    public const BASE_PRICE_DOMESTIC = 5.00; // Base price for domestic delivery in MAD
+    public const BASE_PRICE_DOMESTIC = 0.00; // No base price for domestic delivery
     public const BASE_PRICE_INTERNATIONAL = 50.00; // Base price for international delivery in MAD
 
     // Domestic rates

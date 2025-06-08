@@ -137,14 +137,7 @@ const UsersList = () => {
                 </td>
                 <td>{user.email}</td>
                 <td>
-                  <select 
-                    value={user.role}
-                    onChange={(e) => handleUserRoleChange(user.id, e.target.value)}
-                    className="role-select"
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
+                 {user.role}
                 </td>
                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                 <td>
@@ -155,7 +148,6 @@ const UsersList = () => {
                     >
                       View
                     </button>
-                    <button className="edit-btn">Edit</button>
                   </div>
                 </td>
               </tr>

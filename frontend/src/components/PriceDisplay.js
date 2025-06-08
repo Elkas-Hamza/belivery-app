@@ -84,16 +84,16 @@ const PriceDisplay = ({
             <span>{distance} km</span>
           </div>
         )}
-      </div>
-
-      <div className="price-breakdown">
+      </div>      <div className="price-breakdown">
         <h4>Price Breakdown</h4>{" "}
-        <div className="breakdown-item">
-          <span className="item-label">
-            <FaCalculator /> Base Price
-          </span>
-          <span className="item-value">{breakdown.base_price} DH</span>
-        </div>
+        {breakdown.base_price > 0 && (
+          <div className="breakdown-item">
+            <span className="item-label">
+              <FaCalculator /> Base Price
+            </span>
+            <span className="item-value">{breakdown.base_price} DH</span>
+          </div>
+        )}
         <div className="breakdown-item">
           <span className="item-label">
             <FaWeightHanging /> Weight Fee
