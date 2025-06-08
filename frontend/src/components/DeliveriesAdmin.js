@@ -124,18 +124,41 @@ const DeliveriesAdmin = () => {
   const handleStatusChange = async (deliveryId, newStatus) => {
     try {
       // Use development endpoint for status updates
-      await api.patch(`/dev/deliveries/${deliveryId}/status`, {
+      const response = await api.patch(`/dev/deliveries/${deliveryId}/status`, {
         status: newStatus,
       });
 
-      // Update local state to reflect the change
-      setDeliveries((prevDeliveries) =>
-        prevDeliveries.map((delivery) =>
-          delivery.id === deliveryId
-            ? { ...delivery, status: newStatus }
-            : delivery
-        )
-      );
+      // Update local state to reflect the change with complete delivery data from response
+      if (response.data && response.data.delivery) {
+        setDeliveries((prevDeliveries) =>
+          prevDeliveries.map((delivery) =>
+            delivery.id === deliveryId
+              ? { 
+                  ...delivery, 
+                  status: response.data.delivery.status,
+                  actual_arrival_date: response.data.delivery.actual_arrival_date,
+                  updated_at: response.data.delivery.updated_at
+                }
+              : delivery
+          )
+        );
+      } else {
+        // Fallback if response doesn't have the expected structure
+        setDeliveries((prevDeliveries) =>
+          prevDeliveries.map((delivery) =>
+            delivery.id === deliveryId
+              ? { 
+                  ...delivery, 
+                  status: newStatus,
+                  // If status is delivered and no actual_arrival_date, set it to now
+                  actual_arrival_date: newStatus === 'delivered' && !delivery.actual_arrival_date 
+                    ? new Date().toISOString() 
+                    : delivery.actual_arrival_date
+                }
+              : delivery
+          )
+        );
+      }
 
       console.log(`Delivery ${deliveryId} status updated to ${newStatus}`);
     } catch (error) {

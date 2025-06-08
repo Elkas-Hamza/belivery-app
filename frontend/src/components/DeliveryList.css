@@ -77,7 +77,6 @@
 }
 
 .deliveries-table {
-  width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.9rem;
@@ -110,7 +109,7 @@
 .deliveries-table th {
   position: sticky;
   top: 0;
-  background-color: #f8f9fa;
+
   z-index: 10;
   font-weight: 600;
   text-transform: uppercase;
@@ -118,6 +117,7 @@
   color: #555;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #dee2e6;
+  outline: none;
 }
 .deliveries-table th:nth-child(1),
 .deliveries-table td:nth-child(1) {
@@ -133,14 +133,13 @@
 
 .deliveries-table th:nth-child(3),
 .deliveries-table td:nth-child(3) {
-  width: 18%; /* Pickup Address */
   min-width: 180px;
   max-width: 220px;
 }
 
 .deliveries-table th:nth-child(4),
 .deliveries-table td:nth-child(4) {
-  width: 18%; /* Delivery Address */
+ /* Delivery Address */
   min-width: 180px;
   max-width: 220px;
 }
@@ -257,64 +256,31 @@
 .shipping-method-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
-  border-radius: 15px;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background: none;
+  border: none;
 }
 
-.shipping-method-badge.domestic {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
-}
+
 
 .shipping-method-badge.truck {
-  background-color: rgba(255, 152, 0, 0.1);
   color: #ff9800;
 }
 
 .shipping-method-badge.air {
-  background-color: rgba(33, 150, 243, 0.1);
   color: #2196f3;
 }
 
 .shipping-method-badge.sea {
-  background-color: rgba(156, 39, 176, 0.1);
   color: #9c27b0;
 }
 
-/* Remove any unwanted hover/focus effects on shipping method column */
-.deliveries-table .shipping-method {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-}
 
-.deliveries-table .shipping-method:hover,
-.deliveries-table .shipping-method:focus,
-.deliveries-table .shipping-method:active {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  background: transparent !important;
-}
 
-.shipping-method-badge {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  cursor: default;
-}
 
-.shipping-method-badge:hover,
-.shipping-method-badge:focus,
-.shipping-method-badge:active {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
 
 /* Additional global rules for the 8th column specifically */
 .deliveries-table th:nth-child(8),
@@ -323,7 +289,6 @@
 .deliveries-table td:nth-child(8) * {
   outline: none !important;
   box-shadow: none !important;
-  border: none !important;
 }
 
 .deliveries-table th:nth-child(8):hover,
@@ -340,7 +305,6 @@
 .deliveries-table td:nth-child(8) *:active {
   outline: none !important;
   box-shadow: none !important;
-  border: none !important;
 }
 
 .truncate {
@@ -440,7 +404,7 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid #dee2e6;
   border-radius: 6px;
-  background: white;
+  
   cursor: pointer;
   font-size: 0.8rem;
   min-width: 130px;
@@ -477,9 +441,7 @@
     padding: 0.5rem;
   }
   
-  .deliveries-table {
-    min-width: 1000px; /* Reduce minimum width on smaller screens */
-  }
+  
   
   .deliveries-table th,
   .deliveries-table td {

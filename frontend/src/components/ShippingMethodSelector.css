@@ -41,22 +41,9 @@
   gap: 1rem;
 }
 
-.shipping-method {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
-  padding: 1.25rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
 
-.shipping-method:hover {
-  border-color: #007bff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
-}
+
+
 
 .shipping-method.selected {
   border-color: #007bff;
