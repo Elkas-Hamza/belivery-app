@@ -31,39 +31,49 @@ const AddressSelector = ({
           country.toLowerCase() === countryPart.toLowerCase()
         );
         
-        if (matchedCountry) {
-          setSelectedCountry(matchedCountry);
-          const cities = getCitiesByCountry(matchedCountry);
-          setAvailableCities(cities);
-          
-          // Check if the city exists in the country's cities (case insensitive)
-          const matchedCity = cities.find(city => 
-            city.toLowerCase() === cityPart.toLowerCase()
-          );
-          
-          if (matchedCity) {
-            setSelectedCity(matchedCity);
-          } else {
-            setSelectedCity(cityPart); // Still set it even if not in our list
-          }
-        } else {
-          setSelectedCountry(countryPart); // Still set it even if not in our list
-          setSelectedCity(cityPart);
-        }
+        // Set country first
+        const countryToSet = matchedCountry || countryPart;
+        setSelectedCountry(countryToSet);
         
+        // Get cities for the country
+        const cities = matchedCountry ? getCitiesByCountry(matchedCountry) : [];
+        setAvailableCities(cities);
+        
+        // Set city
+        const matchedCity = cities.find(city => 
+          city.toLowerCase() === cityPart.toLowerCase()
+        );
+        const cityToSet = matchedCity || cityPart;
+        setSelectedCity(cityToSet);
+        
+        // Set street
         setStreet(streetPart);
       }
+    } else if (!value) {
+      // Clear all fields if value is empty
+      setSelectedCountry("");
+      setSelectedCity("");
+      setStreet("");
+      setAvailableCities([]);
     }
   }, [value]);
-
   // Update available cities when country changes
   useEffect(() => {
     if (selectedCountry) {
-      const cities = getCitiesByCountry(selectedCountry);
-      setAvailableCities(cities);
-      // Reset city if it's not available in the new country
-      if (selectedCity && !cities.includes(selectedCity)) {
-        setSelectedCity("");
+      const countries = getCountries();
+      const isKnownCountry = countries.includes(selectedCountry);
+      
+      if (isKnownCountry) {
+        const cities = getCitiesByCountry(selectedCountry);
+        setAvailableCities(cities);
+        // Only reset city if it's not valid for the new country and we have a predefined list
+        if (selectedCity && !cities.includes(selectedCity)) {
+          // Don't reset if it's a custom city, just add it to available cities
+          setAvailableCities([...cities]);
+        }
+      } else {
+        // For custom countries, keep any existing city
+        setAvailableCities([]);
       }
     } else {
       setAvailableCities([]);
@@ -159,15 +169,14 @@ const AddressSelector = ({
         <div className="address-field">
           <label htmlFor={`street-${label}`} className="field-label">
             <FaRoad /> Street Address
-          </label>
-          <input
+          </label>          <input
             type="text"
             id={`street-${label}`}
             value={street}
             onChange={handleStreetChange}
             placeholder="Enter street address"
             className="address-input"
-            disabled={!selectedCity}
+            disabled={!selectedCountry || !selectedCity}
             required={required}
           />
         </div>

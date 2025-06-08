@@ -60,7 +60,19 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
 }
 
+.address-select:disabled,
+.address-input:disabled {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
 
+.address-select:disabled:hover,
+.address-input:disabled:hover {
+  border-color: #e9ecef;
+}
 
 .address-select option {
   padding: 0.5rem;

@@ -286,7 +286,7 @@ const DeliveryList = ({ onViewDetails }) => {
                           disabled={
                             delivery.status === "cancelled" ||
                             delivery.status === "delivered" ||
-                            delivery.status === "in_progresshad"
+                            delivery.status === "in_progress"
                           }
                         >
                           <FaTrashAlt />
