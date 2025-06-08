@@ -123,6 +123,7 @@ const OrdersList = () => {
               <th>Customer</th>
               <th>Delivery ID</th>
               <th>Amount</th>
+              <th>Shipping Method</th>
               <th>Status</th>
               <th>Date</th>
               <th>Actions</th>
@@ -139,6 +140,21 @@ const OrdersList = () => {
                   {typeof order.amount === "number"
                     ? order.amount.toFixed(2)
                     : parseFloat(order.amount || 0).toFixed(2)}
+                </td>
+                <td>
+                  <span
+                    className={`shipping-badge ${
+                      order.shipping_method || "domestic"
+                    }`}
+                  >
+                    {order.shipping_method === "air"
+                      ? "AIR"
+                      : order.shipping_method === "sea"
+                      ? "SEA"
+                      : order.shipping_method === "truck"
+                      ? "TRUCK"
+                      : "DOMESTIC"}
+                  </span>
                 </td>
                 <td>
                   <select

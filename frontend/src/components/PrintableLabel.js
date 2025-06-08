@@ -58,12 +58,7 @@ const PrintableLabel = ({ delivery, onClose }) => {
                 {delivery.tracking_code ||
                   `FD${delivery.id}${Math.floor(Math.random() * 10000)}`}
               </div>
-              <div className="barcode">
-                *
-                {delivery.tracking_code ||
-                  `FD${delivery.id}${Math.floor(Math.random() * 10000)}`}
-                *
-              </div>
+
             </div>
           </div>
 

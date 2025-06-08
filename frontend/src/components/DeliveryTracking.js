@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaBarcode } from "react-icons/fa";
 import api from "../services/api";
 import "./DeliveryTracking.css";
 
@@ -193,6 +194,21 @@ const DeliveryTracking = ({ deliveryId }) => {
             : delivery.status === "cancelled"
             ? "Cancelled"
             : "30-45 minutes"}
+        </div>
+      </div>
+
+      <div className="tracking-code">
+        <div className="code-label">Tracking Code:</div>
+        <div className="code-value">
+          <FaBarcode className="barcode-icon" />
+          <span className="tracking-number">
+            {delivery.tracking_code || `DL${delivery.id}`}
+          </span>
+          <div className="barcode-display">
+            <div className="barcode-visual">
+              *{delivery.tracking_code || `DL${delivery.id}`}*
+            </div>
+          </div>
         </div>
       </div>
     </div>

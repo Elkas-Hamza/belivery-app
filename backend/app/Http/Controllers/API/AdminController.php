@@ -74,7 +74,7 @@ class AdminController extends Controller
             }
 
             // Use Eloquent instead of raw query builder for better error handling
-            $orders = Order::with('user')
+            $orders = Order::with(['user', 'delivery'])
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($order) {
@@ -85,6 +85,7 @@ class AdminController extends Controller
                         'delivery_id' => $order->delivery_id,
                         'amount' => $order->amount,
                         'status' => $order->status,
+                        'shipping_method' => $order->delivery ? $order->delivery->shipping_method : 'domestic',
                         'created_at' => $order->created_at
                     ];
                 });

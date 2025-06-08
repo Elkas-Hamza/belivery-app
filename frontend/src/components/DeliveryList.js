@@ -35,30 +35,13 @@ const DeliveryList = ({ onViewDetails }) => {
     } finally {
       setLoading(false);
     }
-  };  const handleStatusChange = async (deliveryId, newStatus) => {
+  };
+  const handleStatusChange = async (deliveryId, newStatus) => {
     try {
       // Use development endpoint for status updates
-      const response = await api.patch(`/dev/deliveries/${deliveryId}/status`, {
+      await api.patch(`/dev/deliveries/${deliveryId}/status`, {
         status: newStatus,
       });
-      
-      // Immediately update the local state with the response data
-      if (response.data && response.data.delivery) {
-        setDeliveries(prevDeliveries => 
-          prevDeliveries.map(delivery => 
-            delivery.id === deliveryId 
-              ? { 
-                  ...delivery, 
-                  status: response.data.delivery.status,
-                  actual_arrival_date: response.data.delivery.actual_arrival_date,
-                  updated_at: response.data.delivery.updated_at
-                }
-              : delivery
-          )
-        );
-      }
-      
-      // Also fetch fresh data to ensure consistency
       fetchDeliveries();
       console.log(`Delivery ${deliveryId} status updated to ${newStatus}`);
     } catch (error) {
@@ -220,10 +203,10 @@ const DeliveryList = ({ onViewDetails }) => {
                   <td className="shipping-method" data-label="Shipping Method">
                     <span
                       className={`shipping-method-badge ${
-                        delivery.shipping_method || "domestic"
+                        delivery.shipping_method 
                       }`}
                     >
-                      {(delivery.shipping_method || "domestic").toUpperCase()}
+                      {(delivery.shipping_method ).toUpperCase()}
                     </span>
                   </td>
                   <td className="date" data-label="Created">
@@ -265,7 +248,8 @@ const DeliveryList = ({ onViewDetails }) => {
                           <option value="cancelled">Cancelled</option>
                         </select>
                       )}
-                      <div className="action-buttons">                        <button
+                      <div className="action-buttons">
+                        <button
                           className="action-btn modify-btn"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -274,8 +258,7 @@ const DeliveryList = ({ onViewDetails }) => {
                           title="Modify delivery"
                           disabled={
                             delivery.status === "cancelled" ||
-                            delivery.status === "delivered" ||
-                            delivery.status === "in_progress"
+                            delivery.status === "delivered"
                           }
                         >
                           <FaEdit />

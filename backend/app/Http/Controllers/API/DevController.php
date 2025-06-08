@@ -77,7 +77,7 @@ class DevController extends Controller
     public function getOrders()
     {
         try {
-            $orders = Order::with('user')
+            $orders = Order::with(['user', 'delivery'])
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function ($order) {
@@ -88,6 +88,7 @@ class DevController extends Controller
                         'delivery_id' => $order->delivery_id,
                         'amount' => $order->amount,
                         'status' => $order->status,
+                        'shipping_method' => $order->delivery ? $order->delivery->shipping_method : 'domestic',
                         'created_at' => $order->created_at
                     ];
                 });
@@ -255,6 +256,7 @@ class DevController extends Controller
                     'weight' => $order->delivery->weight,
                     'price' => $order->delivery->price,
                     'status' => $order->delivery->status,
+                    'shipping_method' => $order->delivery->shipping_method,
                     'tracking_code' => $order->delivery->tracking_code,
                     'created_at' => $order->delivery->created_at
                 ];
