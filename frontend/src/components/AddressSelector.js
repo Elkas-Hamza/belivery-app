@@ -31,15 +31,15 @@ const AddressSelector = ({
           country.toLowerCase() === countryPart.toLowerCase()
         );
         
-        // Set country first
+        // Set country first (use original value even if not in predefined list)
         const countryToSet = matchedCountry || countryPart;
         setSelectedCountry(countryToSet);
         
-        // Get cities for the country
+        // Get cities for the country (only if it's a predefined country)
         const cities = matchedCountry ? getCitiesByCountry(matchedCountry) : [];
         setAvailableCities(cities);
         
-        // Set city
+        // Set city (use original value even if not in predefined list)
         const matchedCity = cities.find(city => 
           city.toLowerCase() === cityPart.toLowerCase()
         );
@@ -136,33 +136,47 @@ const AddressSelector = ({
               </option>
             )}
           </select>
-        </div>
-
-        {/* City Selection */}
+        </div>        {/* City Selection */}
         <div className="address-field">
           <label htmlFor={`city-${label}`} className="field-label">
             <FaMapMarkerAlt /> City
-          </label>          <select
-            id={`city-${label}`}
-            value={selectedCity}
-            onChange={handleCityChange}
-            className="address-select"
-            disabled={!selectedCountry}
-            required={required}
-          >
-            <option value="">Select City</option>
-            {availableCities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-            {/* Show the selected city even if it's not in our predefined list */}
-            {selectedCity && !availableCities.includes(selectedCity) && (
-              <option key={selectedCity} value={selectedCity}>
-                {selectedCity} (Custom)
-              </option>
-            )}
-          </select>
+          </label>
+          
+          {/* Use input for custom cities, select for predefined cities */}
+          {availableCities.length > 0 && selectedCountry && getCountries().includes(selectedCountry) ? (
+            <select
+              id={`city-${label}`}
+              value={selectedCity}
+              onChange={handleCityChange}
+              className="address-select"
+              disabled={!selectedCountry}
+              required={required}
+            >
+              <option value="">Select City</option>
+              {availableCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+              {/* Show the selected city even if it's not in our predefined list */}
+              {selectedCity && !availableCities.includes(selectedCity) && (
+                <option key={selectedCity} value={selectedCity}>
+                  {selectedCity} (Custom)
+                </option>
+              )}
+            </select>
+          ) : (
+            <input
+              type="text"
+              id={`city-${label}`}
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              placeholder="Enter city name"
+              className="address-input"
+              disabled={!selectedCountry}
+              required={required}
+            />
+          )}
         </div>
 
         {/* Street Input */}
@@ -176,7 +190,7 @@ const AddressSelector = ({
             onChange={handleStreetChange}
             placeholder="Enter street address"
             className="address-input"
-            disabled={!selectedCountry || !selectedCity}
+            disabled={!selectedCountry}
             required={required}
           />
         </div>
