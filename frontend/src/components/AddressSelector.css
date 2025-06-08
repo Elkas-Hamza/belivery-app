@@ -60,13 +60,7 @@
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
 }
 
-.address-select:disabled,
-.address-input:disabled {
-  background-color: #f8f9fa;
-  color: #6c757d;
-  cursor: not-allowed;
-  border-color: #dee2e6;
-}
+
 
 .address-select option {
   padding: 0.5rem;
@@ -125,13 +119,9 @@
   box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.15);
 }
 
-/* Hover effects */
-.address-select:not(:disabled):hover,
-.address-input:not(:disabled):hover {
-  border-color: #80bdff;
-}
 
-/* Focus within for better UX */
+
+/* Focus within for better U */
 .address-selector:focus-within .address-label {
   color: #007bff;
 }

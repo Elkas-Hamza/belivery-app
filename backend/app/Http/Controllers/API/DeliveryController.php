@@ -387,9 +387,9 @@ class DeliveryController extends Controller
             }
 
             // Check if delivery can be modified
-            if (in_array($delivery->status, ['delivered', 'cancelled'])) {
+            if (in_array($delivery->status, ['delivered', 'cancelled', 'in_progress'])) {
                 return response()->json([
-                    'message' => 'Cannot modify delivered or cancelled deliveries'
+                    'message' => 'Cannot modify delivered, cancelled, or in-progress deliveries'
                 ], 422);
             }
 

@@ -18,18 +18,40 @@ const AddressSelector = ({
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [street, setStreet] = useState("");
-  const [availableCities, setAvailableCities] = useState([]);
-
-  // Parse existing address value on component mount
+  const [availableCities, setAvailableCities] = useState([]);  // Parse existing address value on component mount
   useEffect(() => {
     if (value && value.includes(",")) {
       const parts = value.split(",").map((part) => part.trim());
       if (parts.length >= 3) {
         const [streetPart, cityPart, countryPart] = parts;
+        
+        // Check if the country exists in our location data (case insensitive)
+        const countries = getCountries();
+        const matchedCountry = countries.find(country => 
+          country.toLowerCase() === countryPart.toLowerCase()
+        );
+        
+        if (matchedCountry) {
+          setSelectedCountry(matchedCountry);
+          const cities = getCitiesByCountry(matchedCountry);
+          setAvailableCities(cities);
+          
+          // Check if the city exists in the country's cities (case insensitive)
+          const matchedCity = cities.find(city => 
+            city.toLowerCase() === cityPart.toLowerCase()
+          );
+          
+          if (matchedCity) {
+            setSelectedCity(matchedCity);
+          } else {
+            setSelectedCity(cityPart); // Still set it even if not in our list
+          }
+        } else {
+          setSelectedCountry(countryPart); // Still set it even if not in our list
+          setSelectedCity(cityPart);
+        }
+        
         setStreet(streetPart);
-        setSelectedCity(cityPart);
-        setSelectedCountry(countryPart);
-        setAvailableCities(getCitiesByCountry(countryPart));
       }
     }
   }, [value]);
@@ -84,8 +106,7 @@ const AddressSelector = ({
         <div className="address-field">
           <label htmlFor={`country-${label}`} className="field-label">
             <FaGlobe /> Country
-          </label>
-          <select
+          </label>          <select
             id={`country-${label}`}
             value={selectedCountry}
             onChange={handleCountryChange}
@@ -98,6 +119,12 @@ const AddressSelector = ({
                 {country}
               </option>
             ))}
+            {/* Show the selected country even if it's not in our predefined list */}
+            {selectedCountry && !countries.includes(selectedCountry) && (
+              <option key={selectedCountry} value={selectedCountry}>
+                {selectedCountry} (Custom)
+              </option>
+            )}
           </select>
         </div>
 
@@ -105,8 +132,7 @@ const AddressSelector = ({
         <div className="address-field">
           <label htmlFor={`city-${label}`} className="field-label">
             <FaMapMarkerAlt /> City
-          </label>
-          <select
+          </label>          <select
             id={`city-${label}`}
             value={selectedCity}
             onChange={handleCityChange}
@@ -120,6 +146,12 @@ const AddressSelector = ({
                 {city}
               </option>
             ))}
+            {/* Show the selected city even if it's not in our predefined list */}
+            {selectedCity && !availableCities.includes(selectedCity) && (
+              <option key={selectedCity} value={selectedCity}>
+                {selectedCity} (Custom)
+              </option>
+            )}
           </select>
         </div>
 

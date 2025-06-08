@@ -93,10 +93,19 @@ const DeliveryList = ({ onViewDetails }) => {
     setShowModifyModal(false);
     setSelectedDelivery(null);
   };
-
   const handleDeliveryUpdated = (updatedDelivery) => {
-    // Refresh the deliveries list
+    // Update the delivery in the local state immediately for better UX
+    setDeliveries(prevDeliveries => 
+      prevDeliveries.map(delivery => 
+        delivery.id === updatedDelivery.id ? updatedDelivery : delivery
+      )
+    );
+    
+    // Also refresh the entire list to ensure consistency
     fetchDeliveries();
+    
+    // Show success message
+    console.log(`Delivery #${updatedDelivery.id} updated successfully`);
   };
 
   if (loading) {
@@ -254,11 +263,15 @@ const DeliveryList = ({ onViewDetails }) => {
                           onClick={(e) => {
                             e.stopPropagation();
                             handleModifyDelivery(delivery);
-                          }}
-                          title="Modify delivery"
+                          }}                          title={
+                            delivery.status === "in_progress"
+                              ? "Cannot modify delivery in progress"
+                              : "Modify delivery"
+                          }
                           disabled={
                             delivery.status === "cancelled" ||
-                            delivery.status === "delivered"
+                            delivery.status === "delivered" ||
+                            delivery.status === "in_progress"
                           }
                         >
                           <FaEdit />
@@ -272,7 +285,8 @@ const DeliveryList = ({ onViewDetails }) => {
                           title="Delete delivery"
                           disabled={
                             delivery.status === "cancelled" ||
-                            delivery.status === "delivered"
+                            delivery.status === "delivered" ||
+                            delivery.status === "in_progresshad"
                           }
                         >
                           <FaTrashAlt />

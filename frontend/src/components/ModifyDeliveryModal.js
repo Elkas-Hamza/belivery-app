@@ -43,8 +43,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
     if (!address || !address.includes(",")) return "";
     const parts = address.split(",").map((part) => part.trim());
     return parts[parts.length - 1] || "";
-  };
-  // Initialize countries and shipping method based on existing addresses
+  };  // Initialize countries and shipping method based on existing addresses
   useEffect(() => {
     if (delivery) {
       const pickupCountryFromAddress = extractCountryFromAddress(
@@ -65,7 +64,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
       );
       setShippingMethod(determinedMethod);
     }
-  }, [delivery]); // Create refs to track the current form values for price calculation
+  }, [delivery]);// Create refs to track the current form values for price calculation
   const calculationData = {
     pickup_address: formData.pickup_address,
     delivery_address: formData.delivery_address,
@@ -259,8 +258,7 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
 
     setLoading(true);
 
-    try {
-      const response = await api.put(`/deliveries/${delivery.id}`, {
+    try {      const response = await api.put(`/deliveries/${delivery.id}`, {
         pickup_address: formData.pickup_address,
         delivery_address: formData.delivery_address,
         contact_number: formData.contact_number,
@@ -268,16 +266,17 @@ const ModifyDeliveryModal = ({ delivery, onClose, onDeliveryUpdated }) => {
         price: parseFloat(formData.price),
         notes: formData.notes || null,
         shipping_method: shippingMethod || "domestic",
-        arrival_date: formData.arrival_date || null,
+        estimated_arrival_date: formData.estimated_arrival_date || null,
       });
 
       onDeliveryUpdated(response.data);
-      onClose();
-    } catch (error) {
+      onClose();    } catch (error) {
       console.error("Error updating delivery:", error);
 
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
+      } else if (error.response?.data?.message) {
+        alert(error.response.data.message);
       } else {
         alert(
           "An error occurred while updating the delivery. Please try again."

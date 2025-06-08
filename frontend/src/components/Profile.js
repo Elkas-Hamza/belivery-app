@@ -195,16 +195,7 @@ const Profile = () => {
               ref={fileInputRef}
               className="file-input"
             />
-            <label htmlFor="profile_image" className="upload-label">
-              Choose Image
-            </label>
-            <button 
-              className="upload-btn"
-              onClick={handleImageUpload}
-              disabled={uploadingImage || !imagePreview}
-            >
-              {uploadingImage ? 'Uploading...' : 'Upload Image'}
-            </button>
+
           </div>
         </div>
         <div className="profile-title">
@@ -227,18 +218,11 @@ const Profile = () => {
         >
           Profile Information
         </button>
-        <button 
-          className={`profile-tab ${activeTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => setActiveTab('notifications')}
-        >
-          Notification Preferences
-        </button>
-      </div>
+
 
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
-      {activeTab === 'profile' ? (
         <div className="profile-content">
           {editMode ? (
             <form onSubmit={handleSubmit} className="profile-form">
@@ -388,9 +372,7 @@ const Profile = () => {
             </div>
           )}
         </div>
-      ) : (
-        <NotificationPreferences />
-      )}
+      </div>
     </div>
   );
 };
